@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Projects | Rohans Web</title>
+
+<link rel="icon" href="https://rohansweb-codexamples.github.io/download%20(3).png">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+min-height:100vh;
+background:
+linear-gradient(
+135deg,
+#ffd54a,
+#ff8c00,
+#ff4d4d,
+#ff4fa3
+);
+background-size:400% 400%;
+animation:bg 15s infinite ease;
+color:white;
+}
+
+@keyframes bg{
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+}
+
+header{
+padding:80px 20px;
+text-align:center;
+}
+
+header img{
+width:130px;
+border-radius:25px;
+box-shadow:0 0 30px rgba(255,255,255,.3);
+}
+
+header h1{
+font-size:4rem;
+margin-top:20px;
+}
+
+.projects{
+display:grid;
+grid-template-columns:
+repeat(auto-fit,minmax(320px,1fr));
+gap:25px;
+padding:40px;
+max-width:1400px;
+margin:auto;
+}
+
+.card{
+background:rgba(255,255,255,.12);
+backdrop-filter:blur(18px);
+border-radius:25px;
+padding:30px;
+transition:.3s;
+box-shadow:
+0 10px 30px rgba(0,0,0,.25);
+}
+
+.card:hover{
+transform:translateY(-8px);
+}
+
+.card h2{
+margin-bottom:15px;
+font-size:2rem;
+}
+
+.card p{
+opacity:.9;
+line-height:1.6;
+}
+
+.btn{
+display:inline-block;
+margin-top:20px;
+padding:14px 22px;
+background:white;
+color:#ff6600;
+font-weight:bold;
+text-decoration:none;
+border-radius:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<img src="https://rohansweb-codexamples.github.io/download%20(3).png">
+
+<h1>Projects</h1>
+
+<p>Explore everything from Rohans Web.</p>
+
+</header>
+
+<section class="projects">
+
+<div class="card">
+<h2>Projects</h2>
+<p>Browse all Rohans Web projects.</p>
+<a class="btn"
+href="https://projects.rohansweb.co.uk">
+Open
+</a>
+</div>
+
+<div class="card">
+<h2>Game Hub</h2>
+<p>Play games and discover new releases.</p>
+<a class="btn"
+href="https://gamehub.rohansweb.co.uk">
+Play
+</a>
+</div>
+
+<div class="card">
+<h2>BeamDrop</h2>
+<p>Store and share files online.</p>
+<a class="btn"
+href="https://beamdrop-gidy.onrender.com">
+Open
+</a>
+</div>
+
+</section>
+
+</body>
+</html>
