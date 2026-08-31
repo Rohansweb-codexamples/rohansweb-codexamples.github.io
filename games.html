@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Games | Rohans Web</title>
+
+<link rel="icon" href="https://rohansweb-codexamples.github.io/download%20(3).png">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#ffd54a,#ff8c00,#ff4d4d,#ff4fa3);
+  background-size:400% 400%;
+  animation:bg 15s infinite ease;
+  color:white;
+}
+
+@keyframes bg{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+nav{
+  position:fixed;
+  top:0;
+  width:100%;
+  padding:15px;
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  backdrop-filter:blur(20px);
+  background:rgba(0,0,0,.25);
+  z-index:100;
+}
+
+nav a{
+  color:white;
+  text-decoration:none;
+  padding:10px 18px;
+  border-radius:12px;
+  background:rgba(255,255,255,.1);
+  transition:.2s;
+}
+
+nav a:hover{background:rgba(255,255,255,.25)}
+
+header{
+  padding:100px 25px 30px;
+  text-align:center;
+}
+
+header h1{font-size:3.5rem;margin-bottom:10px}
+header p{opacity:.9;font-size:1.1rem}
+
+.tabs{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  padding:0 20px 20px;
+}
+
+.tab{
+  padding:12px 22px;
+  border:none;
+  border-radius:14px;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(10px);
+  color:white;
+  font-weight:bold;
+  font-size:1rem;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.tab:hover{background:rgba(255,255,255,.25)}
+.tab.active{background:white;color:#ff6600}
+
+.game-area{
+  max-width:600px;
+  margin:0 auto 40px;
+  padding:0 20px;
+}
+
+.panel{
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(18px);
+  border-radius:25px;
+  padding:30px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  display:none;
+}
+
+.panel.active{display:block}
+
+.panel h2{
+  font-size:1.8rem;
+  margin-bottom:15px;
+}
+
+.panel p{
+  opacity:.85;
+  margin-bottom:20px;
+  line-height:1.5;
+}
+
+.score-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+  font-size:1.1rem;
+  font-weight:bold;
+}
+
+button.action{
+  padding:14px 24px;
+  border:none;
+  border-radius:14px;
+  background:#ff8c00;
+  color:white;
+  font-weight:bold;
+  font-size:1rem;
+  cursor:pointer;
+  transition:.2s;
+}
+
+button.action:hover{background:#ff6600}
+button.action:active{transform:scale(.95)}
+
+/* Memory game */
+.mem-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin:0 auto;
+  max-width:400px;
+}
+
+.mem-card{
+  aspect-ratio:1;
+  border-radius:12px;
+  background:rgba(255,255,255,.15);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:2rem;
+  cursor:pointer;
+  transition:.3s;
+  user-select:none;
+}
+
+.mem-card.flipped{
+  background:rgba(255,255,255,.9);
+  color:#ff6600;
+}
+
+.mem-card.matched{
+  background:#2ecc71;
+  color:white;
+  cursor:default;
+}
+
+/* Tic-Tac-Toe */
+.ttt-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  max-width:300px;
+  margin:0 auto;
+}
+
+.ttt-cell{
+  aspect-ratio:1;
+  border-radius:12px;
+  background:rgba(255,255,255,.15);
+  border:none;
+  font-size:2.5rem;
+  font-weight:bold;
+  color:white;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.ttt-cell:hover:empty{background:rgba(255,255,255,.25)}
+.ttt-cell.x{color:#8be9fd}
+.ttt-cell.o{color:#ffd54a}
+
+.status{
+  text-align:center;
+  font-size:1.2rem;
+  font-weight:bold;
+  margin:15px 0;
+  min-height:1.5em;
+}
+
+/* Reaction */
+.react-box{
+  width:100%;
+  max-width:400px;
+  height:250px;
+  margin:0 auto;
+  border-radius:20px;
+  background:rgba(255,80,80,.5);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.4rem;
+  font-weight:bold;
+  cursor:pointer;
+  transition:background .2s;
+}
+
+.react-box.go{background:#2ecc71}
+.react-box.wait{background:#ff4d4d}
+.react-box.early{background:#ff8c00}
+
+footer{
+  padding:40px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="projects.html">Projects</a>
+  <a href="code-library.html">Code Library</a>
+  <a href="games.html">Games</a>
+  <a href="https://gamehub.rohansweb.co.uk">Game Hub</a>
+  <a href="https://beamdrop-gidy.onrender.com">BeamDrop</a>
+</nav>
+
+<header>
+  <h1>Mini Games</h1>
+  <p>Three quick games to play right in your browser.</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-game="memory">Memory Match</button>
+  <button class="tab" data-game="ttt">Tic-Tac-Toe</button>
+  <button class="tab" data-game="reaction">Reaction Test</button>
+</div>
+
+<div class="game-area">
+
+  <!-- Memory Match -->
+  <div class="panel active" id="memory-panel">
+    <h2>Memory Match</h2>
+    <p>Flip cards to find matching pairs. Fewer moves is better!</p>
+    <div class="score-row">
+      <span>Moves: <span id="mem-moves">0</span></span>
+      <span>Matches: <span id="mem-matches">0</span>/8</span>
+    </div>
+    <div class="mem-grid" id="mem-grid"></div>
+    <div class="status" id="mem-status"></div>
+    <div style="text-align:center;margin-top:15px">
+      <button class="action" id="mem-reset">New Game</button>
+    </div>
+  </div>
+
+  <!-- Tic-Tac-Toe -->
+  <div class="panel" id="ttt-panel">
+    <h2>Tic-Tac-Toe</h2>
+    <p>You are X, the computer is O. Get three in a row to win.</p>
+    <div class="ttt-grid" id="ttt-grid"></div>
+    <div class="status" id="ttt-status">Your turn</div>
+    <div style="text-align:center;margin-top:15px">
+      <button class="action" id="ttt-reset">New Game</button>
+    </div>
+  </div>
+
+  <!-- Reaction Test -->
+  <div class="panel" id="reaction-panel">
+    <h2>Reaction Test</h2>
+    <p>Wait for green, then click as fast as you can!</p>
+    <div class="react-box" id="react-box">Click to start</div>
+    <div class="status" id="react-status"></div>
+  </div>
+
+</div>
+
+<footer>© Rohans Web</footer>
+
+<script>
+// Tab switching
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.game + "-panel").classList.add("active");
+  });
+});
+
+// ===== Memory Match =====
+const emojis = ["🎮","🎨","🚀","⚡","🌈","🔥","🎯","⭐"];
+let memFirst = null, memSecond = null, memLock = false;
+let memMoves = 0, memMatched = 0;
+
+function initMemory(){
+  const grid = document.getElementById("mem-grid");
+  grid.innerHTML = "";
+  memFirst = null; memSecond = null; memLock = false;
+  memMoves = 0; memMatched = 0;
+  document.getElementById("mem-moves").textContent = "0";
+  document.getElementById("mem-matches").textContent = "0";
+  document.getElementById("mem-status").textContent = "";
+
+  const pairs = [...emojis, ...emojis];
+  pairs.sort(()=>Math.random()-0.5);
+
+  pairs.forEach((emoji, i)=>{
+    const card = document.createElement("div");
+    card.className = "mem-card";
+    card.dataset.emoji = emoji;
+    card.dataset.index = i;
+    card.addEventListener("click", ()=>flipCard(card));
+    grid.appendChild(card);
+  });
+}
+
+function flipCard(card){
+  if(memLock || card.classList.contains("flipped") || card.classList.contains("matched")) return;
+  card.classList.add("flipped");
+  card.textContent = card.dataset.emoji;
+
+  if(!memFirst){
+    memFirst = card;
+  } else {
+    memSecond = card;
+    memMoves++;
+    document.getElementById("mem-moves").textContent = memMoves;
+    memLock = true;
+
+    if(memFirst.dataset.emoji === memSecond.dataset.emoji){
+      memFirst.classList.add("matched");
+      memSecond.classList.add("matched");
+      memMatched++;
+      document.getElementById("mem-matches").textContent = memMatched;
+      memFirst = null; memSecond = null; memLock = false;
+      if(memMatched === 8){
+        document.getElementById("mem-status").textContent = "You won in " + memMoves + " moves!";
+      }
+    } else {
+      setTimeout(()=>{
+        memFirst.classList.remove("flipped");
+        memSecond.classList.remove("flipped");
+        memFirst.textContent = "";
+        memSecond.textContent = "";
+        memFirst = null; memSecond = null; memLock = false;
+      }, 800);
+    }
+  }
+}
+
+document.getElementById("mem-reset").addEventListener("click", initMemory);
+initMemory();
+
+// ===== Tic-Tac-Toe =====
+let tttBoard = ["","","","","","","","",""];
+let tttOver = false;
+
+function initTTT(){
+  tttBoard = ["","","","","","","","",""];
+  tttOver = false;
+  document.getElementById("ttt-status").textContent = "Your turn";
+  const grid = document.getElementById("ttt-grid");
+  grid.innerHTML = "";
+  for(let i=0; i<9; i++){
+    const cell = document.createElement("button");
+    cell.className = "ttt-cell";
+    cell.addEventListener("click", ()=>tttMove(i, cell));
+    grid.appendChild(cell);
+  }
+}
+
+const tttLines = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+function tttCheck(b, p){
+  return tttLines.some(line=>line.every(i=>b[i]===p));
+}
+
+function tttMove(i, cell){
+  if(tttOver || tttBoard[i]) return;
+  tttBoard[i] = "X";
+  cell.textContent = "X";
+  cell.classList.add("x");
+
+  if(tttCheck(tttBoard, "X")){
+    document.getElementById("ttt-status").textContent = "You win!";
+    tttOver = true;
+    return;
+  }
+  if(!tttBoard.includes("")){
+    document.getElementById("ttt-status").textContent = "It's a draw!";
+    tttOver = true;
+    return;
+  }
+
+  // Computer move - simple AI
+  let move = tttFindWin("O") || tttFindBlock() || tttFindBest();
+  if(move !== null){
+    tttBoard[move] = "O";
+    const cells = document.querySelectorAll(".ttt-cell");
+    cells[move].textContent = "O";
+    cells[move].classList.add("o");
+  }
+
+  if(tttCheck(tttBoard, "O")){
+    document.getElementById("ttt-status").textContent = "Computer wins!";
+    tttOver = true;
+    return;
+  }
+  if(!tttBoard.includes("")){
+    document.getElementById("ttt-status").textContent = "It's a draw!";
+    tttOver = true;
+  }
+}
+
+function tttFindWin(p){
+  for(let i=0; i<9; i++){
+    if(!tttBoard[i]){
+      const copy = [...tttBoard];
+      copy[i] = p;
+      if(tttCheck(copy, p)) return i;
+    }
+  }
+  return null;
+}
+
+function tttFindBlock(){
+  return tttFindWin("X");
+}
+
+function tttFindBest(){
+  if(!tttBoard[4]) return 4;
+  const corners = [0,2,6,8].filter(i=>!tttBoard[i]);
+  if(corners.length) return corners[Math.floor(Math.random()*corners.length)];
+  const empty = tttBoard.map((v,i)=>v?"":i).filter(Boolean);
+  return empty.length ? empty[Math.floor(Math.random()*empty.length)] : null;
+}
+
+document.getElementById("ttt-reset").addEventListener("click", initTTT);
+initTTT();
+
+// ===== Reaction Test =====
+const reactBox = document.getElementById("react-box");
+const reactStatus = document.getElementById("react-status");
+let reactState = "idle";
+let reactStart = 0;
+let reactTimeout = null;
+
+reactBox.addEventListener("click", ()=>{
+  if(reactState === "idle"){
+    reactState = "waiting";
+    reactBox.className = "react-box wait";
+    reactBox.textContent = "Wait for green...";
+    reactStatus.textContent = "";
+    const delay = 1500 + Math.random()*3000;
+    reactTimeout = setTimeout(()=>{
+      reactState = "ready";
+      reactBox.className = "react-box go";
+      reactBox.textContent = "CLICK NOW!";
+      reactStart = performance.now();
+    }, delay);
+  } else if(reactState === "waiting"){
+    clearTimeout(reactTimeout);
+    reactState = "idle";
+    reactBox.className = "react-box early";
+    reactBox.textContent = "Too early! Click to try again";
+    reactStatus.textContent = "";
+  } else if(reactState === "ready"){
+    const time = Math.round(performance.now() - reactStart);
+    reactState = "idle";
+    reactBox.className = "react-box";
+    reactBox.textContent = "Click to play again";
+    reactStatus.textContent = "Your time: " + time + "ms";
+  }
+});
+</script>
+
+</body>
+</html>

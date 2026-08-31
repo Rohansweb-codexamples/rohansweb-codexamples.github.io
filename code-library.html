@@ -3,141 +3,236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Code Library | Rohans Web</title>
 
-<title>Code Library</title>
+<link rel="icon" href="https://rohansweb-codexamples.github.io/download%20(3).png">
 
 <style>
-
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
 body{
-background:#0e1117;
-color:white;
+  min-height:100vh;
+  background:linear-gradient(135deg,#ffd54a,#ff8c00,#ff4d4d,#ff4fa3);
+  background-size:400% 400%;
+  animation:bg 15s infinite ease;
+  color:white;
+}
+
+@keyframes bg{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+nav{
+  position:fixed;
+  top:0;
+  width:100%;
+  padding:15px;
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  backdrop-filter:blur(20px);
+  background:rgba(0,0,0,.25);
+  z-index:100;
+}
+
+nav a{
+  color:white;
+  text-decoration:none;
+  padding:10px 18px;
+  border-radius:12px;
+  background:rgba(255,255,255,.1);
+  transition:.2s;
+}
+
+nav a:hover{
+  background:rgba(255,255,255,.25);
 }
 
 header{
-padding:50px 25px;
-background:
-linear-gradient(
-135deg,
-#ffd54a,
-#ff8c00,
-#ff4d4d,
-#ff4fa3
-);
+  padding:100px 25px 40px;
+  text-align:center;
 }
 
 header h1{
-font-size:3rem;
+  font-size:3.5rem;
+  margin-bottom:10px;
+}
+
+header p{
+  opacity:.9;
+  font-size:1.1rem;
 }
 
 .search{
-padding:25px;
-background:#161b22;
-position:sticky;
-top:0;
-z-index:10;
+  padding:25px;
+  position:sticky;
+  top:0;
+  z-index:10;
 }
 
 input{
-width:100%;
-padding:16px;
-border:none;
-border-radius:14px;
-font-size:16px;
+  width:100%;
+  max-width:600px;
+  display:block;
+  margin:auto;
+  padding:16px 20px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(10px);
+  color:white;
+  outline:none;
+}
+
+input::placeholder{color:rgba(255,255,255,.6)}
+
+input:focus{
+  background:rgba(255,255,255,.22);
+  box-shadow:0 0 0 3px rgba(255,255,255,.25);
 }
 
 .grid{
-display:grid;
-grid-template-columns:
-repeat(auto-fit,minmax(350px,1fr));
-gap:20px;
-padding:25px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+  gap:20px;
+  padding:25px;
+  max-width:1400px;
+  margin:auto;
 }
 
 .card{
-background:#161b22;
-border-radius:20px;
-overflow:hidden;
-box-shadow:
-0 10px 25px rgba(0,0,0,.4);
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(18px);
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,.25);
+  transition:.3s;
 }
 
+.card:hover{transform:translateY(-5px)}
+
 .card h2{
-padding:20px;
-background:#202938;
+  padding:18px 20px;
+  font-size:1.3rem;
 }
 
 pre{
-padding:20px;
-overflow:auto;
-color:#8be9fd;
+  padding:20px;
+  overflow:auto;
+  color:#8be9fd;
+  background:rgba(0,0,0,.35);
+  font-family:"Courier New",monospace;
+  font-size:14px;
+  line-height:1.5;
+  max-height:300px;
 }
 
 .copy{
-margin:20px;
-padding:12px 18px;
-border:none;
-border-radius:12px;
-background:#ff8c00;
-color:white;
-font-weight:bold;
-cursor:pointer;
+  margin:0 20px 20px;
+  padding:12px 18px;
+  border:none;
+  border-radius:12px;
+  background:#ff8c00;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
 }
 
+.copy:hover{background:#ff6600}
+.copy.copied{background:#2ecc71}
+
+.empty{
+  text-align:center;
+  padding:60px 20px;
+  opacity:.7;
+  font-size:1.2rem;
+}
+
+footer{
+  padding:40px;
+  text-align:center;
+}
 </style>
 </head>
 
 <body>
 
+<nav>
+  <a href="index.html">Home</a>
+  <a href="projects.html">Projects</a>
+  <a href="code-library.html">Code Library</a>
+  <a href="games.html">Games</a>
+  <a href="https://gamehub.rohansweb.co.uk">Game Hub</a>
+  <a href="https://beamdrop-gidy.onrender.com">BeamDrop</a>
+</nav>
+
 <header>
-<h1>Code Library</h1>
-<p>Free snippets, animations and components.</p>
+  <h1>Code Library</h1>
+  <p>Free snippets, animations and components. Click copy to grab any code.</p>
 </header>
 
 <div class="search">
-<input
-id="search"
-placeholder="Search snippets...">
+  <input id="search" placeholder="Search snippets..." autocomplete="off">
 </div>
 
-<div
-class="grid"
-id="snippets">
-</div>
+<div class="grid" id="snippets"></div>
 
-<script src="rohansweb-codexamples.github.io/snippets.js"></script>
+<footer>© Rohans Web</footer>
 
+<script src="snippets.js"></script>
 <script>
+const grid = document.getElementById("snippets");
+const search = document.getElementById("search");
 
-const search =
-document.getElementById("search");
+function render(list){
+  grid.innerHTML = "";
+  if(list.length === 0){
+    grid.innerHTML = '<p class="empty">No snippets found.</p>';
+    return;
+  }
+  list.forEach((s, i)=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h2>${s.title}</h2>
+      <pre><code></code></pre>
+      <button class="copy">Copy</button>
+    `;
+    card.querySelector("code").textContent = s.code;
+    const btn = card.querySelector(".copy");
+    btn.addEventListener("click", ()=>{
+      navigator.clipboard.writeText(s.code).then(()=>{
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(()=>{
+          btn.textContent = "Copy";
+          btn.classList.remove("copied");
+        }, 1500);
+      });
+    });
+    grid.appendChild(card);
+  });
+}
 
-search.addEventListener(
-"input",
-()=>{
-const value=
-search.value.toLowerCase();
+render(snippets);
 
-document
-.querySelectorAll(".card")
-.forEach(card=>{
-
-card.style.display=
-card.innerText
-.toLowerCase()
-.includes(value)
-? "block"
-: "none";
-
+search.addEventListener("input", ()=>{
+  const value = search.value.toLowerCase();
+  const filtered = snippets.filter(s=>
+    s.title.toLowerCase().includes(value) ||
+    s.code.toLowerCase().includes(value)
+  );
+  render(filtered);
 });
-});
-
 </script>
 
 </body>
