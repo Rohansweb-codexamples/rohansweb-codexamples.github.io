@@ -17,16 +17,44 @@
 
 body{
   min-height:100vh;
-  background:linear-gradient(135deg,#ffd54a,#ff8c00,#ff4d4d,#ff4fa3);
-  background-size:400% 400%;
-  animation:bg 15s infinite ease;
+  background:#1a1205;
   color:white;
+  overflow-x:hidden;
 }
 
-@keyframes bg{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
+.blob{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(60px);
+  opacity:.5;
+  z-index:-1;
+  pointer-events:none;
+}
+
+.blob1{
+  width:500px;height:500px;
+  background:#ffd54a;
+  top:-120px;right:-100px;
+  animation:float1 18s ease-in-out infinite;
+}
+
+.blob2{
+  width:400px;height:400px;
+  background:#ff8c00;
+  bottom:-80px;left:-80px;
+  animation:float2 22s ease-in-out infinite;
+}
+
+@keyframes float1{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(-80px,60px) scale(1.1)}
+  66%{transform:translate(40px,80px) scale(.95)}
+}
+
+@keyframes float2{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(80px,-60px) scale(1.15)}
+  66%{transform:translate(-40px,-80px) scale(.9)}
 }
 
 nav{
@@ -38,7 +66,7 @@ nav{
   justify-content:center;
   gap:15px;
   backdrop-filter:blur(20px);
-  background:rgba(0,0,0,.25);
+  background:rgba(26,18,5,.6);
   z-index:100;
 }
 
@@ -47,124 +75,212 @@ nav a{
   text-decoration:none;
   padding:10px 18px;
   border-radius:12px;
-  background:rgba(255,255,255,.1);
+  background:rgba(255,213,74,.15);
+  border:1px solid rgba(255,140,0,.3);
   transition:.2s;
 }
 
 nav a:hover{
-  background:rgba(255,255,255,.25);
+  background:rgba(255,140,0,.4);
 }
 
 header{
-  padding:100px 25px 40px;
+  padding:100px 25px 30px;
   text-align:center;
 }
 
 header h1{
   font-size:3.5rem;
   margin-bottom:10px;
+  background:linear-gradient(90deg,#ffd54a,#ff8c00);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
 header p{
-  opacity:.9;
+  opacity:.7;
   font-size:1.1rem;
 }
 
-.search{
-  padding:25px;
+.controls{
   position:sticky;
   top:0;
   z-index:10;
+  padding:20px 25px;
+  background:rgba(26,18,5,.7);
+  backdrop-filter:blur(15px);
+  border-bottom:1px solid rgba(255,140,0,.15);
+}
+
+.controls-inner{
+  max-width:1000px;
+  margin:auto;
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
 }
 
 input{
-  width:100%;
-  max-width:600px;
-  display:block;
-  margin:auto;
-  padding:16px 20px;
-  border:none;
-  border-radius:14px;
-  font-size:16px;
-  background:rgba(255,255,255,.15);
-  backdrop-filter:blur(10px);
+  flex:1;
+  min-width:200px;
+  padding:14px 18px;
+  border:1px solid rgba(255,140,0,.3);
+  border-radius:12px;
+  font-size:15px;
+  background:rgba(255,213,74,.1);
   color:white;
   outline:none;
 }
 
-input::placeholder{color:rgba(255,255,255,.6)}
+input::placeholder{color:rgba(255,213,74,.5)}
 
 input:focus{
-  background:rgba(255,255,255,.22);
-  box-shadow:0 0 0 3px rgba(255,255,255,.25);
+  border-color:#ff8c00;
+  background:rgba(255,140,0,.15);
+}
+
+.filter-btn{
+  padding:12px 18px;
+  border:1px solid rgba(255,140,0,.3);
+  border-radius:12px;
+  background:rgba(255,213,74,.1);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
+  font-size:14px;
+}
+
+.filter-btn:hover{background:rgba(255,140,0,.2)}
+.filter-btn.active{
+  background:linear-gradient(135deg,#ffd54a,#ff8c00);
+  color:#1a1205;
+  border-color:transparent;
 }
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(380px,1fr));
   gap:20px;
   padding:25px;
-  max-width:1400px;
+  max-width:1300px;
   margin:auto;
 }
 
 .card{
-  background:rgba(255,255,255,.12);
+  background:rgba(255,140,0,.06);
   backdrop-filter:blur(18px);
+  border:1px solid rgba(255,213,74,.15);
   border-radius:20px;
   overflow:hidden;
   box-shadow:0 10px 25px rgba(0,0,0,.25);
   transition:.3s;
 }
 
-.card:hover{transform:translateY(-5px)}
+.card:hover{
+  transform:translateY(-5px);
+  border-color:rgba(255,140,0,.4);
+}
 
-.card h2{
-  padding:18px 20px;
-  font-size:1.3rem;
+.card-header{
+  padding:16px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.card-header h2{
+  font-size:1.2rem;
+  color:#ffd54a;
+}
+
+.badge{
+  font-size:.7rem;
+  padding:4px 10px;
+  border-radius:20px;
+  font-weight:bold;
+  text-transform:uppercase;
+}
+
+.badge.css{background:rgba(139,233,253,.2);color:#8be9fd}
+.badge.html{background:rgba(255,140,0,.25);color:#ffb733}
+
+.preview{
+  background:#111;
+  border-top:1px solid rgba(255,140,0,.1);
+  border-bottom:1px solid rgba(255,140,0,.1);
+  min-height:80px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.preview iframe{
+  width:100%;
+  border:none;
+  min-height:80px;
+}
+
+.preview-none{
+  color:rgba(255,255,255,.3);
+  font-size:.85rem;
+  padding:30px;
+  text-align:center;
 }
 
 pre{
-  padding:20px;
+  padding:18px 20px;
   overflow:auto;
   color:#8be9fd;
-  background:rgba(0,0,0,.35);
+  background:rgba(0,0,0,.4);
   font-family:"Courier New",monospace;
-  font-size:14px;
+  font-size:13px;
   line-height:1.5;
-  max-height:300px;
+  max-height:260px;
+}
+
+.card-actions{
+  padding:15px 20px 20px;
 }
 
 .copy{
-  margin:0 20px 20px;
-  padding:12px 18px;
+  padding:10px 18px;
   border:none;
-  border-radius:12px;
-  background:#ff8c00;
-  color:white;
+  border-radius:10px;
+  background:linear-gradient(135deg,#ffd54a,#ff8c00);
+  color:#1a1205;
   font-weight:bold;
   cursor:pointer;
   transition:.2s;
+  font-size:.9rem;
 }
 
-.copy:hover{background:#ff6600}
-.copy.copied{background:#2ecc71}
+.copy:hover{box-shadow:0 4px 15px rgba(255,140,0,.4)}
+.copy.copied{background:#2ecc71;color:white}
 
 .empty{
   text-align:center;
   padding:60px 20px;
-  opacity:.7;
+  opacity:.5;
   font-size:1.2rem;
+  grid-column:1/-1;
 }
 
 footer{
   padding:40px;
   text-align:center;
+  opacity:.5;
+  font-size:.9rem;
 }
 </style>
 </head>
 
 <body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
 
 <nav>
   <a href="index.html">Home</a>
@@ -177,11 +293,16 @@ footer{
 
 <header>
   <h1>Code Library</h1>
-  <p>Free snippets, animations and components. Click copy to grab any code.</p>
+  <p>Free snippets, animations and components with live previews. Click copy to grab any code.</p>
 </header>
 
-<div class="search">
-  <input id="search" placeholder="Search snippets..." autocomplete="off">
+<div class="controls">
+  <div class="controls-inner">
+    <input id="search" placeholder="Search snippets..." autocomplete="off">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="css">CSS</button>
+    <button class="filter-btn" data-filter="html">HTML + JS</button>
+  </div>
 </div>
 
 <div class="grid" id="snippets"></div>
@@ -192,6 +313,27 @@ footer{
 <script>
 const grid = document.getElementById("snippets");
 const search = document.getElementById("search");
+let currentFilter = "all";
+
+function buildPreview(s){
+  if(!s.preview) return '<div class="preview-none">No preview available</div>';
+  const html = "<style>" + (s.type === "css" ? s.code : "") + "</style>" + s.preview;
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("sandbox","allow-scripts");
+  iframe.setAttribute("scrolling","no");
+  const wrapper = document.createElement("div");
+  wrapper.className = "preview";
+  wrapper.appendChild(iframe);
+  iframe.onload = ()=>{
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write("<body style='margin:0;padding:10px;display:flex;align-items:center;justify-content:center;min-height:80px;background:#111;'>" + html + "</body>");
+    doc.close();
+    const h = doc.body.scrollHeight;
+    iframe.style.height = Math.max(80, h + 20) + "px";
+  };
+  return wrapper;
+}
 
 function render(list){
   grid.innerHTML = "";
@@ -199,15 +341,23 @@ function render(list){
     grid.innerHTML = '<p class="empty">No snippets found.</p>';
     return;
   }
-  list.forEach((s, i)=>{
+  list.forEach(s=>{
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <h2>${s.title}</h2>
+      <div class="card-header">
+        <h2>${s.title}</h2>
+        <span class="badge ${s.type}">${s.type === "html" ? "HTML+JS" : "CSS"}</span>
+      </div>
+      <div class="preview-slot"></div>
       <pre><code></code></pre>
-      <button class="copy">Copy</button>
+      <div class="card-actions">
+        <button class="copy">Copy</button>
+      </div>
     `;
     card.querySelector("code").textContent = s.code;
+    const previewSlot = card.querySelector(".preview-slot");
+    previewSlot.appendChild(buildPreview(s));
     const btn = card.querySelector(".copy");
     btn.addEventListener("click", ()=>{
       navigator.clipboard.writeText(s.code).then(()=>{
@@ -223,15 +373,26 @@ function render(list){
   });
 }
 
+function getFiltered(){
+  const value = search.value.toLowerCase();
+  return snippets.filter(s=>{
+    const matchesFilter = currentFilter === "all" || s.type === currentFilter;
+    const matchesSearch = s.title.toLowerCase().includes(value) || s.code.toLowerCase().includes(value);
+    return matchesFilter && matchesSearch;
+  });
+}
+
 render(snippets);
 
-search.addEventListener("input", ()=>{
-  const value = search.value.toLowerCase();
-  const filtered = snippets.filter(s=>
-    s.title.toLowerCase().includes(value) ||
-    s.code.toLowerCase().includes(value)
-  );
-  render(filtered);
+search.addEventListener("input", ()=>render(getFiltered()));
+
+document.querySelectorAll(".filter-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    render(getFiltered());
+  });
 });
 </script>
 
