@@ -19,16 +19,16 @@
 
 body{
   min-height:100vh;
-  background:#1a1205;
-  color:white;
+  background:#fff7e6;
+  color:#4a3206;
   overflow-x:hidden;
 }
 
 .blob{
   position:fixed;
   border-radius:50%;
-  filter:blur(60px);
-  opacity:.55;
+  filter:blur(70px);
+  opacity:.4;
   z-index:-1;
   pointer-events:none;
 }
@@ -80,7 +80,7 @@ header{
 header img{
   width:130px;
   border-radius:25px;
-  box-shadow:0 0 40px rgba(255,140,0,.5);
+  box-shadow:0 0 40px rgba(255,140,0,.4);
   animation:floatImg 4s ease-in-out infinite;
 }
 
@@ -92,15 +92,16 @@ header img{
 header h1{
   font-size:4rem;
   margin-top:20px;
-  background:linear-gradient(90deg,#ffd54a,#ff8c00);
+  background:linear-gradient(90deg,#ff8c00,#ffd54a);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
 
 header p{
-  opacity:.7;
+  opacity:.6;
   font-size:1.1rem;
   margin-top:10px;
+  color:#7a5c1a;
 }
 
 .projects{
@@ -113,48 +114,49 @@ header p{
 }
 
 .card{
-  background:rgba(255,140,0,.08);
+  background:rgba(255,255,255,.5);
   backdrop-filter:blur(18px);
-  border:1px solid rgba(255,213,74,.2);
+  border:1px solid rgba(255,140,0,.2);
   border-radius:25px;
   padding:30px;
   transition:.3s;
-  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  box-shadow:0 10px 30px rgba(255,140,0,.1);
 }
 
 .card:hover{
   transform:translateY(-8px);
-  border-color:rgba(255,140,0,.5);
-  background:rgba(255,140,0,.15);
+  border-color:rgba(255,140,0,.4);
+  background:rgba(255,255,255,.7);
 }
 
 .card h2{
   margin-bottom:15px;
   font-size:2rem;
-  color:#ffd54a;
+  color:#ff8c00;
 }
 
 .card p{
-  opacity:.85;
+  opacity:.7;
   line-height:1.6;
+  color:#7a5c1a;
 }
 
 .btn{
   display:inline-block;
   margin-top:20px;
   padding:14px 22px;
-  background:linear-gradient(135deg,#ffd54a,#ff8c00);
-  color:#1a1205;
+  background:linear-gradient(135deg,#ff8c00,#ffd54a);
+  color:#4a2000;
   font-weight:bold;
   text-decoration:none;
   border-radius:14px;
   transition:.2s;
-  box-shadow:0 4px 20px rgba(255,140,0,.3);
+  box-shadow:0 4px 20px rgba(255,140,0,.25);
 }
 
 .btn:hover{
   transform:translateY(-3px);
-  box-shadow:0 8px 30px rgba(255,140,0,.5);
+  box-shadow:0 8px 30px rgba(255,140,0,.45);
 }
 
 .bottom-links{
@@ -167,7 +169,7 @@ header p{
 .bottom-links h3{
   font-size:1.4rem;
   margin-bottom:20px;
-  color:#ffd54a;
+  color:#ff8c00;
 }
 
 .bottom-links .btn{
@@ -177,8 +179,9 @@ header p{
 footer{
   padding:40px;
   text-align:center;
-  opacity:.6;
+  opacity:.5;
   font-size:.9rem;
+  color:#7a5c1a;
 }
 
 </style>

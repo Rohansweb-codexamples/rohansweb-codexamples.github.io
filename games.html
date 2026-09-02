@@ -17,16 +17,16 @@
 
 body{
   min-height:100vh;
-  background:#1a1205;
-  color:white;
+  background:#fff7e6;
+  color:#4a3206;
   overflow-x:hidden;
 }
 
 .blob{
   position:fixed;
   border-radius:50%;
-  filter:blur(60px);
-  opacity:.55;
+  filter:blur(70px);
+  opacity:.4;
   z-index:-1;
   pointer-events:none;
 }
@@ -77,25 +77,26 @@ nav{
   padding:15px;
   display:flex;
   justify-content:center;
-  gap:15px;
+  gap:12px;
   backdrop-filter:blur(20px);
-  background:linear-gradient(90deg,rgba(255,140,0,.85),rgba(255,213,74,.85));
-  border-bottom:1px solid rgba(255,255,255,.2);
+  background:linear-gradient(90deg,rgba(255,140,0,.9),rgba(255,213,74,.9));
+  border-bottom:1px solid rgba(255,255,255,.3);
   z-index:100;
+  flex-wrap:wrap;
 }
 
 nav a{
-  color:#1a1205;
+  color:#4a2000;
   text-decoration:none;
   padding:10px 18px;
   border-radius:12px;
-  background:rgba(255,255,255,.25);
+  background:rgba(255,255,255,.35);
   font-weight:bold;
   transition:.2s;
 }
 
 nav a:hover{
-  background:rgba(255,255,255,.5);
+  background:rgba(255,255,255,.6);
   transform:translateY(-2px);
 }
 
@@ -107,11 +108,11 @@ header{
 header h1{
   font-size:3.5rem;
   margin-bottom:10px;
-  background:linear-gradient(90deg,#ffd54a,#ff8c00);
+  background:linear-gradient(90deg,#ff8c00,#ffd54a);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
-header p{opacity:.7;font-size:1.1rem}
+header p{opacity:.6;font-size:1.1rem;color:#7a5c1a}
 
 .tabs{
   display:flex;
@@ -123,19 +124,22 @@ header p{opacity:.7;font-size:1.1rem}
 
 .tab{
   padding:12px 22px;
-  border:none;
+  border:1px solid rgba(255,140,0,.3);
   border-radius:14px;
-  background:rgba(255,255,255,.15);
-  backdrop-filter:blur(10px);
-  color:white;
+  background:rgba(255,255,255,.5);
+  color:#4a2000;
   font-weight:bold;
   font-size:1rem;
   cursor:pointer;
   transition:.2s;
 }
 
-.tab:hover{background:rgba(255,255,255,.25)}
-.tab.active{background:white;color:#ff6600}
+.tab:hover{background:rgba(255,255,255,.7)}
+.tab.active{
+  background:linear-gradient(135deg,#ff8c00,#ffd54a);
+  color:#4a2000;
+  border-color:transparent;
+}
 
 .game-area{
   max-width:600px;
@@ -144,12 +148,12 @@ header p{opacity:.7;font-size:1.1rem}
 }
 
 .panel{
-  background:rgba(255,140,0,.08);
+  background:rgba(255,255,255,.5);
   backdrop-filter:blur(18px);
-  border:1px solid rgba(255,213,74,.2);
+  border:1px solid rgba(255,140,0,.2);
   border-radius:25px;
   padding:30px;
-  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  box-shadow:0 10px 30px rgba(255,140,0,.1);
   display:none;
 }
 
@@ -158,12 +162,14 @@ header p{opacity:.7;font-size:1.1rem}
 .panel h2{
   font-size:1.8rem;
   margin-bottom:15px;
+  color:#ff8c00;
 }
 
 .panel p{
-  opacity:.85;
+  opacity:.7;
   margin-bottom:20px;
   line-height:1.5;
+  color:#7a5c1a;
 }
 
 .score-row{
@@ -173,24 +179,24 @@ header p{opacity:.7;font-size:1.1rem}
   margin-bottom:15px;
   font-size:1.1rem;
   font-weight:bold;
+  color:#7a5c1a;
 }
 
 button.action{
   padding:14px 24px;
   border:none;
   border-radius:14px;
-  background:#ff8c00;
-  color:white;
+  background:linear-gradient(135deg,#ff8c00,#ffd54a);
+  color:#4a2000;
   font-weight:bold;
   font-size:1rem;
   cursor:pointer;
   transition:.2s;
 }
 
-button.action:hover{background:#ff6600}
+button.action:hover{box-shadow:0 4px 15px rgba(255,140,0,.4)}
 button.action:active{transform:scale(.95)}
 
-/* Memory game */
 .mem-grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -202,7 +208,8 @@ button.action:active{transform:scale(.95)}
 .mem-card{
   aspect-ratio:1;
   border-radius:12px;
-  background:rgba(255,255,255,.15);
+  background:rgba(255,140,0,.15);
+  border:1px solid rgba(255,140,0,.2);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -214,16 +221,15 @@ button.action:active{transform:scale(.95)}
 
 .mem-card.flipped{
   background:rgba(255,255,255,.9);
-  color:#ff6600;
+  color:#ff8c00;
 }
 
 .mem-card.matched{
-  background:#2ecc71;
+  background:#81c784;
   color:white;
   cursor:default;
 }
 
-/* Tic-Tac-Toe */
 .ttt-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -235,18 +241,18 @@ button.action:active{transform:scale(.95)}
 .ttt-cell{
   aspect-ratio:1;
   border-radius:12px;
-  background:rgba(255,255,255,.15);
-  border:none;
+  background:rgba(255,140,0,.15);
+  border:1px solid rgba(255,140,0,.2);
   font-size:2.5rem;
   font-weight:bold;
-  color:white;
+  color:#ff8c00;
   cursor:pointer;
   transition:.2s;
 }
 
-.ttt-cell:hover:empty{background:rgba(255,255,255,.25)}
-.ttt-cell.x{color:#8be9fd}
-.ttt-cell.o{color:#ffd54a}
+.ttt-cell:hover:empty{background:rgba(255,140,0,.25)}
+.ttt-cell.x{color:#ff8c00}
+.ttt-cell.o{color:#ffa726}
 
 .status{
   text-align:center;
@@ -254,16 +260,16 @@ button.action:active{transform:scale(.95)}
   font-weight:bold;
   margin:15px 0;
   min-height:1.5em;
+  color:#7a5c1a;
 }
 
-/* Reaction */
 .react-box{
   width:100%;
   max-width:400px;
   height:250px;
   margin:0 auto;
   border-radius:20px;
-  background:rgba(255,80,80,.5);
+  background:rgba(255,80,80,.4);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -271,15 +277,44 @@ button.action:active{transform:scale(.95)}
   font-weight:bold;
   cursor:pointer;
   transition:background .2s;
+  color:white;
 }
 
-.react-box.go{background:#2ecc71}
-.react-box.wait{background:#ff4d4d}
+.react-box.go{background:#66bb6a}
+.react-box.wait{background:#ef5350}
 .react-box.early{background:#ff8c00}
+
+.more-games{
+  text-align:center;
+  padding:30px 20px 10px;
+  max-width:600px;
+  margin:0 auto;
+}
+
+.more-games a{
+  display:inline-block;
+  padding:16px 32px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#ff8c00,#ffd54a);
+  color:#4a2000;
+  font-weight:bold;
+  font-size:1.1rem;
+  text-decoration:none;
+  box-shadow:0 4px 20px rgba(255,140,0,.25);
+  transition:.2s;
+}
+
+.more-games a:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 30px rgba(255,140,0,.45);
+}
 
 footer{
   padding:40px;
   text-align:center;
+  opacity:.5;
+  font-size:.9rem;
+  color:#7a5c1a;
 }
 </style>
 </head>
@@ -312,7 +347,6 @@ footer{
 
 <div class="game-area">
 
-  <!-- Memory Match -->
   <div class="panel active" id="memory-panel">
     <h2>Memory Match</h2>
     <p>Flip cards to find matching pairs. Fewer moves is better!</p>
@@ -327,7 +361,6 @@ footer{
     </div>
   </div>
 
-  <!-- Tic-Tac-Toe -->
   <div class="panel" id="ttt-panel">
     <h2>Tic-Tac-Toe</h2>
     <p>You are X, the computer is O. Get three in a row to win.</p>
@@ -338,7 +371,6 @@ footer{
     </div>
   </div>
 
-  <!-- Reaction Test -->
   <div class="panel" id="reaction-panel">
     <h2>Reaction Test</h2>
     <p>Wait for green, then click as fast as you can!</p>
@@ -348,14 +380,13 @@ footer{
 
 </div>
 
-<div style="text-align:center;padding:30px 20px 10px;max-width:600px;margin:0 auto;">
-  <a class="action" style="display:inline-block;padding:16px 32px;border-radius:16px;background:linear-gradient(135deg,#ffd54a,#ff8c00);color:#1a1205;font-weight:bold;font-size:1.1rem;text-decoration:none;box-shadow:0 4px 20px rgba(255,140,0,.3);transition:.2s;" href="https://gamehub.rohansweb.co.uk">More Games &rarr;</a>
+<div class="more-games">
+  <a href="https://gamehub.rohansweb.co.uk">More Games &rarr;</a>
 </div>
 
 <footer>© Rohans Web</footer>
 
 <script>
-// Tab switching
 document.querySelectorAll(".tab").forEach(tab=>{
   tab.addEventListener("click", ()=>{
     document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
@@ -365,7 +396,6 @@ document.querySelectorAll(".tab").forEach(tab=>{
   });
 });
 
-// ===== Memory Match =====
 const emojis = ["🎮","🎨","🚀","⚡","🌈","🔥","🎯","⭐"];
 let memFirst = null, memSecond = null, memLock = false;
 let memMoves = 0, memMatched = 0;
@@ -429,7 +459,6 @@ function flipCard(card){
 document.getElementById("mem-reset").addEventListener("click", initMemory);
 initMemory();
 
-// ===== Tic-Tac-Toe =====
 let tttBoard = ["","","","","","","","",""];
 let tttOver = false;
 
@@ -474,7 +503,6 @@ function tttMove(i, cell){
     return;
   }
 
-  // Computer move - simple AI
   let move = tttFindWin("O") || tttFindBlock() || tttFindBest();
   if(move !== null){
     tttBoard[move] = "O";
@@ -520,7 +548,6 @@ function tttFindBest(){
 document.getElementById("ttt-reset").addEventListener("click", initTTT);
 initTTT();
 
-// ===== Reaction Test =====
 const reactBox = document.getElementById("react-box");
 const reactStatus = document.getElementById("react-status");
 let reactState = "idle";

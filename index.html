@@ -16,8 +16,8 @@
 }
 
 body{
-  background:#1a1205;
-  color:white;
+  background:#fff7e6;
+  color:#4a3206;
   overflow-x:hidden;
   min-height:100vh;
 }
@@ -25,8 +25,8 @@ body{
 .blob{
   position:fixed;
   border-radius:50%;
-  filter:blur(60px);
-  opacity:.6;
+  filter:blur(70px);
+  opacity:.45;
   z-index:-1;
   pointer-events:none;
 }
@@ -84,25 +84,26 @@ nav{
   padding:15px;
   display:flex;
   justify-content:center;
-  gap:15px;
+  gap:12px;
   backdrop-filter:blur(20px);
-  background:linear-gradient(90deg,rgba(255,140,0,.85),rgba(255,213,74,.85));
-  border-bottom:1px solid rgba(255,255,255,.2);
+  background:linear-gradient(90deg,rgba(255,140,0,.9),rgba(255,213,74,.9));
+  border-bottom:1px solid rgba(255,255,255,.3);
   z-index:100;
+  flex-wrap:wrap;
 }
 
 nav a{
-  color:#1a1205;
+  color:#4a2000;
   text-decoration:none;
   padding:10px 18px;
   border-radius:12px;
-  background:rgba(255,255,255,.25);
+  background:rgba(255,255,255,.35);
   font-weight:bold;
   transition:.2s;
 }
 
 nav a:hover{
-  background:rgba(255,255,255,.5);
+  background:rgba(255,255,255,.6);
   transform:translateY(-2px);
 }
 
@@ -119,7 +120,7 @@ nav a:hover{
 .hero img{
   width:150px;
   border-radius:30px;
-  box-shadow:0 0 40px rgba(255,140,0,.5);
+  box-shadow:0 0 40px rgba(255,140,0,.4);
   animation:floatImg 4s ease-in-out infinite;
 }
 
@@ -131,16 +132,17 @@ nav a:hover{
 .hero h1{
   font-size:5rem;
   margin:25px 0 10px;
-  background:linear-gradient(90deg,#ffd54a,#ff8c00);
+  background:linear-gradient(90deg,#ff8c00,#ffd54a);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  text-shadow:0 0 40px rgba(255,140,0,.3);
+  filter:drop-shadow(0 2px 10px rgba(255,140,0,.2));
 }
 
 .hero .subtitle{
-  opacity:.7;
+  opacity:.6;
   font-size:1.2rem;
   margin-bottom:25px;
+  color:#7a5c1a;
 }
 
 .buttons{
@@ -152,25 +154,25 @@ nav a:hover{
 
 .btn{
   padding:15px 25px;
-  background:linear-gradient(135deg,#ffd54a,#ff8c00);
-  color:#1a1205;
+  background:linear-gradient(135deg,#ff8c00,#ffd54a);
+  color:#4a2000;
   border-radius:14px;
   font-weight:bold;
   text-decoration:none;
   transition:.2s;
-  box-shadow:0 4px 20px rgba(255,140,0,.3);
+  box-shadow:0 4px 20px rgba(255,140,0,.25);
 }
 
 .btn:hover{
   transform:translateY(-3px);
-  box-shadow:0 8px 30px rgba(255,140,0,.5);
+  box-shadow:0 8px 30px rgba(255,140,0,.45);
 }
 
 .btn:active{transform:scale(.96)}
 
 .cards{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
   gap:20px;
   padding:50px;
   max-width:1200px;
@@ -178,9 +180,9 @@ nav a:hover{
 }
 
 .card{
-  background:rgba(255,140,0,.08);
+  background:rgba(255,255,255,.5);
   backdrop-filter:blur(15px);
-  border:1px solid rgba(255,213,74,.2);
+  border:1px solid rgba(255,140,0,.2);
   border-radius:20px;
   padding:25px;
   transition:.3s;
@@ -188,28 +190,33 @@ nav a:hover{
 
 .card:hover{
   transform:translateY(-6px);
-  border-color:rgba(255,140,0,.5);
-  background:rgba(255,140,0,.15);
+  border-color:rgba(255,140,0,.4);
+  background:rgba(255,255,255,.7);
 }
 
 .card h2{
   font-size:1.6rem;
   margin-bottom:10px;
-  color:#ffd54a;
+  color:#ff8c00;
 }
 
 .card p{
-  opacity:.8;
+  opacity:.7;
   line-height:1.6;
+  color:#7a5c1a;
 }
 
 footer{
   padding:40px;
   text-align:center;
-  opacity:.6;
+  opacity:.5;
   font-size:.9rem;
+  color:#7a5c1a;
 }
 </style>
+  <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
 </head>
 
 <body>
