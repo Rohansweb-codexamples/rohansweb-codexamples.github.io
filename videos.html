@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Videos | Rohans Web</title>
+
+<link rel="icon" href="https://rohansweb-codexamples.github.io/download%20(3).png">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  background:#fff7e6;
+  color:#4a3206;
+  overflow-x:hidden;
+}
+
+.blob{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(70px);
+  opacity:.4;
+  z-index:-1;
+  pointer-events:none;
+}
+
+.blob1{
+  width:500px;height:500px;
+  background:#ffd54a;
+  top:-120px;left:-100px;
+  animation:float1 18s ease-in-out infinite;
+}
+
+.blob2{
+  width:400px;height:400px;
+  background:#ff8c00;
+  bottom:-80px;right:-80px;
+  animation:float2 22s ease-in-out infinite;
+}
+
+@keyframes float1{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(80px,60px) scale(1.1)}
+  66%{transform:translate(-40px,80px) scale(.95)}
+}
+
+@keyframes float2{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(-80px,-60px) scale(1.15)}
+  66%{transform:translate(40px,-80px) scale(.9)}
+}
+
+nav{
+  position:fixed;
+  top:0;
+  width:100%;
+  padding:15px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  backdrop-filter:blur(20px);
+  background:linear-gradient(90deg,rgba(255,140,0,.9),rgba(255,213,74,.9));
+  border-bottom:1px solid rgba(255,255,255,.3);
+  z-index:100;
+  flex-wrap:wrap;
+}
+
+nav a{
+  color:#4a2000;
+  text-decoration:none;
+  padding:10px 18px;
+  border-radius:12px;
+  background:rgba(255,255,255,.35);
+  font-weight:bold;
+  transition:.2s;
+}
+
+nav a:hover{
+  background:rgba(255,255,255,.6);
+  transform:translateY(-2px);
+}
+
+header{
+  padding:100px 25px 40px;
+  text-align:center;
+}
+
+header h1{
+  font-size:3.5rem;
+  margin-bottom:10px;
+  background:linear-gradient(90deg,#ff8c00,#ffd54a);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+header p{
+  opacity:.6;
+  font-size:1.1rem;
+  color:#7a5c1a;
+}
+
+.video-gallery{
+  display:flex;
+  flex-direction:column;
+  gap:40px;
+  max-width:900px;
+  margin:0 auto 60px;
+  padding:0 20px;
+}
+
+.video-container{
+  width:100%;
+  background:#000;
+  border-radius:20px;
+  overflow:hidden;
+  position:relative;
+  border:1px solid rgba(255,140,0,.2);
+  box-shadow:0 20px 50px rgba(255,140,0,.15);
+  cursor:pointer;
+  transition:border-color .3s;
+}
+
+.video-container:hover{
+  border-color:rgba(255,140,0,.4);
+}
+
+.video-container.pseudo-fullscreen{
+  position:fixed;
+  top:0;left:0;
+  width:100vw;height:100vh;
+  max-width:none;
+  z-index:9999;
+  border-radius:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#000;
+}
+
+.video-container video{
+  width:100%;
+  max-height:100%;
+  display:block;
+}
+
+.video-label{
+  padding:15px 20px;
+  background:rgba(255,255,255,.5);
+  backdrop-filter:blur(15px);
+  border:1px solid rgba(255,140,0,.15);
+  border-top:none;
+  border-radius:0 0 20px 20px;
+  font-weight:bold;
+  color:#ff8c00;
+  font-size:1.1rem;
+}
+
+.video-container.pseudo-fullscreen .video-label{display:none}
+
+.custom-controls{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.9));
+  padding:25px 20px 15px;
+  display:flex;
+  align-items:center;
+  gap:15px;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .4s,transform .4s;
+  pointer-events:none;
+}
+
+.video-container.show-controls .custom-controls{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+
+.control-group{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-grow:1;
+}
+
+.icon-btn{
+  background:linear-gradient(135deg,#ff8c00,#ffd54a);
+  border:none;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  color:#4a2000;
+  font-size:1.3rem;
+  transition:transform .15s;
+  font-weight:bold;
+}
+
+.icon-btn:active{transform:scale(.9)}
+.icon-btn.secondary{
+  background:rgba(255,255,255,.2);
+  color:white;
+}
+
+.progress-bar{
+  flex-grow:1;
+  height:6px;
+  background:rgba(255,255,255,.2);
+  border-radius:3px;
+  cursor:pointer;
+  position:relative;
+}
+
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,#ff8c00,#ffd54a);
+  width:0%;
+  border-radius:3px;
+  transition:width .1s linear;
+}
+
+.v-time{
+  font-size:.75rem;
+  min-width:45px;
+  color:white;
+  font-family:Courier New,monospace;
+}
+
+#exitFsBtn{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:10001;
+  display:none;
+}
+
+.video-hint{
+  text-align:center;
+  padding:0 20px 40px;
+  opacity:.5;
+  font-size:.8rem;
+  color:#7a5c1a;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+.embeds{
+  max-width:900px;
+  margin:0 auto 60px;
+  padding:0 20px;
+}
+
+.embeds h2{
+  text-align:center;
+  font-size:2rem;
+  color:#ff8c00;
+  margin-bottom:30px;
+}
+
+.codepen-card{
+  background:rgba(255,255,255,.5);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(255,140,0,.15);
+  border-radius:20px;
+  padding:20px;
+  margin-bottom:30px;
+  box-shadow:0 10px 25px rgba(255,140,0,.1);
+}
+
+.codepen-card h3{
+  color:#ff8c00;
+  font-size:1.2rem;
+  margin-bottom:15px;
+}
+
+.codepen-card p{
+  opacity:.6;
+  color:#7a5c1a;
+  margin-bottom:15px;
+  font-size:.9rem;
+}
+
+.blog-cta{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:0 auto 60px;
+  padding:16px 32px;
+  border:1px solid rgba(255,140,0,.3);
+  border-radius:50px;
+  background:rgba(255,255,255,.5);
+  color:#4a2000;
+  text-decoration:none;
+  font-weight:bold;
+  font-size:.9rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  max-width:fit-content;
+  transition:.2s;
+}
+
+.blog-cta:hover{
+  background:linear-gradient(135deg,#ff8c00,#ffd54a);
+  border-color:transparent;
+  transform:translateY(-3px);
+  box-shadow:0 8px 25px rgba(255,140,0,.3);
+}
+
+footer{
+  padding:40px;
+  text-align:center;
+  opacity:.5;
+  font-size:.9rem;
+  color:#7a5c1a;
+}
+</style>
+</head>
+
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<nav>
+<a href="index.html">Home</a>
+<a href="projects.html">Projects</a>
+<a href="code-library.html">Code Library</a>
+<a href="games.html">Games</a>
+<a href="videos.html">Videos</a>
+<a href="https://gamehub.rohansweb.co.uk">Game Hub</a>
+<a href="https://beamdrop-gidy.onrender.com">BeamDrop</a>
+</nav>
+
+<header>
+<h1>Videos</h1>
+<p>Watch coding tutorials and media reels.</p>
+</header>
+
+<div class="video-gallery">
+
+<div>
+<div class="video-container" onclick="handleVideoTap(this)">
+<video playsinline muted>
+<source src="https://rohansweb-codexamples.github.io/rohansweb-fluffy-pancake/HTML,%20CSS%20and%20JavaScript.mp4" type="video/mp4">
+</video>
+<div class="custom-controls">
+<button class="icon-btn" onclick="togglePlay(this,event)">&#9658;</button>
+<div class="control-group">
+<div class="progress-bar" onclick="seek(this,event)">
+<div class="progress-fill"></div>
+</div>
+<span class="v-time">0:00</span>
+</div>
+<button class="icon-btn secondary" onclick="toggleMute(this,event)">&#128263;</button>
+<button class="icon-btn secondary" onclick="toggleFullScreen(this,event)">&#9974;</button>
+</div>
+</div>
+<div class="video-label">HTML, CSS and JavaScript</div>
+</div>
+
+<div>
+<div class="video-container" onclick="handleVideoTap(this)">
+<video playsinline muted>
+<source src="https://rohansweb-codexamples.github.io/index.html/PYTHON-vid.mp4" type="video/mp4">
+</video>
+<div class="custom-controls">
+<button class="icon-btn" onclick="togglePlay(this,event)">&#9658;</button>
+<div class="control-group">
+<div class="progress-bar" onclick="seek(this,event)">
+<div class="progress-fill"></div>
+</div>
+<span class="v-time">0:00</span>
+</div>
+<button class="icon-btn secondary" onclick="toggleMute(this,event)">&#128263;</button>
+<button class="icon-btn secondary" onclick="toggleFullScreen(this,event)">&#9974;</button>
+</div>
+</div>
+<div class="video-label">Python</div>
+</div>
+
+</div>
+
+<p class="video-hint">Click video to show controls &bull; Audio muted by default</p>
+
+<div class="embeds">
+<h2>CodePen Embeds</h2>
+
+<div class="codepen-card">
+<h3>Maya Explorer Prototype</h3>
+<p>Interactive 3D explorer experiment.</p>
+<p class="codepen" data-height="400" data-theme-id="light" data-default-tab="result" data-slug-hash="RNRqGvB" data-user="Rohansweb-codexamples" style="height:400px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,140,0,.2);border-radius:12px;margin:0;overflow:hidden;">
+<span style="color:#7a5c1a;font-size:.9rem;">Loading CodePen...</span>
+</p>
+</div>
+
+<div class="codepen-card">
+<h3>Particle Simulation V2</h3>
+<p>Animated particle system experiment.</p>
+<p class="codepen" data-height="400" data-theme-id="light" data-default-tab="result" data-slug-hash="GgqwjLw" data-user="Rohansweb-codexamples" style="height:400px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,140,0,.2);border-radius:12px;margin:0;overflow:hidden;">
+<span style="color:#7a5c1a;font-size:.9rem;">Loading CodePen...</span>
+</p>
+</div>
+
+</div>
+
+<a href="https://rohansweb-codexamples.blogspot.com" target="_blank" class="blog-cta">
+View Our Blog &#8599;
+</a>
+
+<footer>© Rohans Web</footer>
+
+<button id="exitFsBtn" class="icon-btn" onclick="exitPseudoFullscreen()">&#10006;</button>
+
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+<script>
+var controlTimeout;
+
+function togglePlay(btn, e){
+  if(e) e.stopPropagation();
+  var container = btn.closest(".video-container");
+  var video = container.querySelector("video");
+  if(video.paused){
+    document.querySelectorAll("video").forEach(function(v){
+      if(v !== video) v.pause();
+    });
+    video.play();
+    btn.innerHTML = "&#10074;&#10074;";
+  } else {
+    video.pause();
+    btn.innerHTML = "&#9658;";
+  }
+}
+
+function toggleMute(btn, e){
+  if(e) e.stopPropagation();
+  var video = btn.closest(".video-container").querySelector("video");
+  video.muted = !video.muted;
+  btn.innerHTML = video.muted ? "&#128263;" : "&#128266;";
+}
+
+function handleVideoTap(container){
+  container.classList.toggle("show-controls");
+  resetControlTimeout(container);
+}
+
+function resetControlTimeout(container){
+  clearTimeout(controlTimeout);
+  var video = container.querySelector("video");
+  if(container.classList.contains("show-controls") && !video.paused){
+    controlTimeout = setTimeout(function(){
+      container.classList.remove("show-controls");
+    }, 3000);
+  }
+}
+
+document.querySelectorAll("video").forEach(function(video){
+  video.ontimeupdate = function(){
+    var container = video.closest(".video-container");
+    var fill = container.querySelector(".progress-fill");
+    var timeLabel = container.querySelector(".v-time");
+    if(video.duration){
+      var pct = (video.currentTime / video.duration) * 100;
+      fill.style.width = pct + "%";
+      var mins = Math.floor(video.currentTime / 60);
+      var secs = Math.floor(video.currentTime % 60);
+      timeLabel.innerText = mins + ":" + (secs < 10 ? "0" + secs : secs);
+    }
+  };
+});
+
+function seek(bar, e){
+  e.stopPropagation();
+  var video = bar.closest(".video-container").querySelector("video");
+  var rect = bar.getBoundingClientRect();
+  var pos = (e.clientX - rect.left) / rect.width;
+  video.currentTime = pos * video.duration;
+}
+
+function toggleFullScreen(btn, e){
+  if(e) e.stopPropagation();
+  var container = btn.closest(".video-container");
+  if(!container.classList.contains("pseudo-fullscreen")){
+    enterPseudoFullscreen(container);
+  } else {
+    exitPseudoFullscreen();
+  }
+}
+
+function enterPseudoFullscreen(container){
+  container.classList.add("pseudo-fullscreen");
+  document.querySelector("nav").style.display = "none";
+  document.getElementById("exitFsBtn").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function exitPseudoFullscreen(){
+  var container = document.querySelector(".video-container.pseudo-fullscreen");
+  if(container) container.classList.remove("pseudo-fullscreen");
+  document.querySelector("nav").style.display = "flex";
+  document.getElementById("exitFsBtn").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape") exitPseudoFullscreen();
+});
+</script>
+
+</body>
+</html>

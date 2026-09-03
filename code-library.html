@@ -286,6 +286,42 @@ pre{
   color:#7a5c1a;
 }
 
+.embeds-section{
+  max-width:900px;
+  margin:40px auto 60px;
+  padding:0 25px;
+}
+
+.embeds-section h2{
+  text-align:center;
+  font-size:2rem;
+  color:#ff8c00;
+  margin-bottom:30px;
+}
+
+.codepen-card{
+  background:rgba(255,255,255,.5);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(255,140,0,.15);
+  border-radius:20px;
+  padding:20px;
+  margin-bottom:30px;
+  box-shadow:0 10px 25px rgba(255,140,0,.1);
+}
+
+.codepen-card h3{
+  color:#ff8c00;
+  font-size:1.2rem;
+  margin-bottom:8px;
+}
+
+.codepen-card p{
+  opacity:.6;
+  color:#7a5c1a;
+  margin-bottom:15px;
+  font-size:.9rem;
+}
+
 footer{
   padding:40px;
   text-align:center;
@@ -306,6 +342,7 @@ footer{
   <a href="projects.html">Projects</a>
   <a href="code-library.html">Code Library</a>
   <a href="games.html">Games</a>
+  <a href="videos.html">Videos</a>
   <a href="https://gamehub.rohansweb.co.uk">Game Hub</a>
   <a href="https://beamdrop-gidy.onrender.com">BeamDrop</a>
 </nav>
@@ -326,8 +363,27 @@ footer{
 
 <div class="grid" id="snippets"></div>
 
+<div class="embeds-section">
+  <h2>CodePen Experiments</h2>
+  <div class="codepen-card">
+    <h3>Maya Explorer Prototype</h3>
+    <p>Interactive 3D explorer experiment.</p>
+    <p class="codepen" data-height="400" data-theme-id="light" data-default-tab="result" data-slug-hash="RNRqGvB" data-user="Rohansweb-codexamples" style="height:400px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,140,0,.2);border-radius:12px;margin:0;overflow:hidden;">
+      <span style="color:#7a5c1a;font-size:.9rem;">Loading CodePen...</span>
+    </p>
+  </div>
+  <div class="codepen-card">
+    <h3>Particle Simulation V2</h3>
+    <p>Animated particle system experiment.</p>
+    <p class="codepen" data-height="400" data-theme-id="light" data-default-tab="result" data-slug-hash="GgqwjLw" data-user="Rohansweb-codexamples" style="height:400px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,140,0,.2);border-radius:12px;margin:0;overflow:hidden;">
+      <span style="color:#7a5c1a;font-size:.9rem;">Loading CodePen...</span>
+    </p>
+  </div>
+</div>
+
 <footer>© Rohans Web</footer>
 
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
 <script src="snippets.js"></script>
 <script>
 const grid = document.getElementById("snippets");

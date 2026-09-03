@@ -115,6 +115,15 @@ nav a:hover{
   align-items:center;
   text-align:center;
   padding:20px;
+  position:relative;
+}
+
+#particles{
+  position:absolute;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
 }
 
 .hero img{
@@ -122,6 +131,8 @@ nav a:hover{
   border-radius:30px;
   box-shadow:0 0 40px rgba(255,140,0,.4);
   animation:floatImg 4s ease-in-out infinite;
+  position:relative;
+  z-index:2;
 }
 
 @keyframes floatImg{
@@ -136,6 +147,20 @@ nav a:hover{
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
   filter:drop-shadow(0 2px 10px rgba(255,140,0,.2));
+  position:relative;
+  z-index:2;
+  min-height:1.2em;
+}
+
+.hero h1::after{
+  content:"|";
+  -webkit-text-fill-color:#ff8c00;
+  animation:blink 1s step-end infinite;
+}
+
+@keyframes blink{
+  0%,100%{opacity:1}
+  50%{opacity:0}
 }
 
 .hero .subtitle{
@@ -143,6 +168,9 @@ nav a:hover{
   font-size:1.2rem;
   margin-bottom:25px;
   color:#7a5c1a;
+  position:relative;
+  z-index:2;
+  letter-spacing:2px;
 }
 
 .buttons{
@@ -150,6 +178,8 @@ nav a:hover{
   flex-wrap:wrap;
   justify-content:center;
   gap:15px;
+  position:relative;
+  z-index:2;
 }
 
 .btn{
@@ -170,6 +200,23 @@ nav a:hover{
 
 .btn:active{transform:scale(.96)}
 
+.scroll-hint{
+  position:absolute;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:.8rem;
+  color:#7a5c1a;
+  opacity:.5;
+  animation:bounce 2s ease-in-out infinite;
+  z-index:2;
+}
+
+@keyframes bounce{
+  0%,100%{transform:translateX(-50%) translateY(0)}
+  50%{transform:translateX(-50%) translateY(10px)}
+}
+
 .cards{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
@@ -186,6 +233,13 @@ nav a:hover{
   border-radius:20px;
   padding:25px;
   transition:.3s;
+  opacity:0;
+  transform:translateY(30px);
+}
+
+.card.visible{
+  opacity:1;
+  transform:translateY(0);
 }
 
 .card:hover{
@@ -206,12 +260,35 @@ nav a:hover{
   color:#7a5c1a;
 }
 
+.custom-cursor{
+  position:fixed;
+  width:12px;
+  height:12px;
+  background:#ff8c00;
+  border-radius:50%;
+  pointer-events:none;
+  z-index:99999;
+  transform:translate(-50%,-50%);
+  transition:width .2s,height .2s,opacity .2s;
+  mix-blend-mode:multiply;
+}
+
+.custom-cursor.grow{
+  width:30px;
+  height:30px;
+  opacity:.5;
+}
+
 footer{
   padding:40px;
   text-align:center;
   opacity:.5;
   font-size:.9rem;
   color:#7a5c1a;
+}
+
+@media(hover:none){
+  .custom-cursor{display:none}
 }
 </style>
   <meta property="og:image" content="https://bolt.new/static/og_default.png">
@@ -226,20 +303,25 @@ footer{
 <div class="blob blob3"></div>
 <div class="blob blob4"></div>
 
+<div class="custom-cursor" id="cursor"></div>
+
 <nav>
 <a href="index.html">Home</a>
 <a href="projects.html">Projects</a>
 <a href="code-library.html">Code Library</a>
 <a href="games.html">Games</a>
+<a href="videos.html">Videos</a>
 <a href="https://gamehub.rohansweb.co.uk">Game Hub</a>
 <a href="https://beamdrop-gidy.onrender.com">BeamDrop</a>
 </nav>
 
 <section class="hero">
 
+<canvas id="particles"></canvas>
+
 <img src="https://rohansweb-codexamples.github.io/download%20(3).png">
 
-<h1>Rohans Web</h1>
+<h1 id="typewriter"></h1>
 <p class="subtitle">Creative web projects, games & code snippets</p>
 
 <div class="buttons">
@@ -248,7 +330,10 @@ footer{
 <a class="btn" href="https://beamdrop-gidy.onrender.com">BeamDrop</a>
 <a class="btn" href="code-library.html">Code Library</a>
 <a class="btn" href="games.html">Mini Games</a>
+<a class="btn" href="videos.html">Videos</a>
 </div>
+
+<div class="scroll-hint">Scroll down</div>
 
 </section>
 
@@ -279,11 +364,104 @@ footer{
 <p>Free snippets, animations and components.</p>
 </div>
 
+<div class="card">
+<h2>Videos</h2>
+<p>Watch coding tutorials and media reels.</p>
+</div>
+
 </section>
 
 <footer>
 © Rohans Web
 </footer>
+
+<script>
+var typeTarget = document.getElementById("typewriter");
+var textToType = "Rohans Web";
+var charIndex = 0;
+function typeEffect(){
+  if(charIndex < textToType.length){
+    typeTarget.textContent += textToType.charAt(charIndex);
+    charIndex++;
+    setTimeout(typeEffect, 150);
+  }
+}
+typeEffect();
+
+var canvas = document.getElementById("particles");
+var ctx = canvas.getContext("2d");
+var particles = [];
+var mouseX = -1000, mouseY = -1000;
+
+function resizeCanvas(){
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+for(var i = 0; i < 80; i++){
+  particles.push({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
+    glow: 0
+  });
+}
+
+document.addEventListener("mousemove", function(e){
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  var cur = document.getElementById("cursor");
+  cur.style.left = e.clientX + "px";
+  cur.style.top = e.clientY + "px";
+});
+
+document.addEventListener("mouseover", function(e){
+  var cur = document.getElementById("cursor");
+  if(e.target.closest("a,button,.card")){
+    cur.classList.add("grow");
+  } else {
+    cur.classList.remove("grow");
+  }
+});
+
+function animateParticles(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(function(p){
+    p.x += p.vx;
+    p.y += p.vy;
+    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+    var dx = p.x - mouseX;
+    var dy = p.y - mouseY;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    if(dist < 120) p.glow = 1.0;
+
+    ctx.fillStyle = p.glow > 0.05 ? "rgba(255,140,0," + Math.max(0.1, p.glow) + ")" : "rgba(255,213,74,0.15)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.5 + p.glow * 4, 0, Math.PI * 2);
+    ctx.fill();
+    p.glow *= 0.96;
+  });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+var cardObserver = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if(entry.isIntersecting){
+      entry.target.classList.add("visible");
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll(".card").forEach(function(card){
+  cardObserver.observe(card);
+});
+</script>
 
 </body>
 </html>
