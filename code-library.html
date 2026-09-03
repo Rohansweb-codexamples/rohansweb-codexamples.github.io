@@ -127,11 +127,11 @@ header p{
 
 input{
   flex:1;
-  min-width:200px;
+  min-width:180px;
   padding:14px 18px;
   border:1px solid rgba(255,140,0,.3);
   border-radius:12px;
-  font-size:15px;
+  font-size:16px;
   background:rgba(255,255,255,.5);
   color:#4a3206;
   outline:none;
@@ -165,11 +165,19 @@ input:focus{
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(380px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
   gap:20px;
   padding:25px;
   max-width:1300px;
   margin:auto;
+}
+
+@media(max-width:480px){
+  .grid{
+    grid-template-columns:1fr;
+    padding:15px;
+    gap:15px;
+  }
 }
 
 .card{
@@ -215,17 +223,16 @@ input:focus{
   background:#fff;
   border-top:1px solid rgba(255,140,0,.1);
   border-bottom:1px solid rgba(255,140,0,.1);
-  min-height:80px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  min-height:90px;
+  position:relative;
   overflow:hidden;
 }
 
 .preview iframe{
   width:100%;
   border:none;
-  min-height:80px;
+  display:block;
+  min-height:90px;
 }
 
 .preview-none{
@@ -237,7 +244,7 @@ input:focus{
 
 pre{
   padding:18px 20px;
-  overflow:auto;
+  overflow-x:auto;
   color:#ff8c00;
   background:rgba(255,247,230,.8);
   border:1px solid rgba(255,140,0,.1);
@@ -245,7 +252,9 @@ pre{
   font-family:"Courier New",monospace;
   font-size:13px;
   line-height:1.5;
-  max-height:260px;
+  max-height:300px;
+  white-space:pre-wrap;
+  word-break:break-word;
 }
 
 .card-actions{
@@ -262,6 +271,7 @@ pre{
   cursor:pointer;
   transition:.2s;
   font-size:.9rem;
+  width:100%;
 }
 
 .copy:hover{box-shadow:0 4px 15px rgba(255,140,0,.4)}
@@ -324,6 +334,19 @@ const grid = document.getElementById("snippets");
 const search = document.getElementById("search");
 let currentFilter = "all";
 
+function makePreviewDoc(s){
+  if(s.type === "css"){
+    return "<!DOCTYPE html><html><head><meta charset='utf-8'>" +
+      "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
+      "<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}" +
+      s.code +
+      "</style></head><body style='display:flex;align-items:center;justify-content:center;min-height:90px;padding:15px;background:#fff;'>" +
+      s.preview +
+      "</body></html>";
+  }
+  return s.code;
+}
+
 function buildPreview(s){
   const wrapper = document.createElement("div");
   wrapper.className = "preview";
@@ -336,29 +359,27 @@ function buildPreview(s){
     return wrapper;
   }
 
-  const css = s.type === "css" ? s.code : "";
   const iframe = document.createElement("iframe");
-  iframe.setAttribute("sandbox","allow-scripts");
+  iframe.setAttribute("sandbox","allow-scripts allow-same-origin");
   iframe.setAttribute("scrolling","no");
+  iframe.style.width = "100%";
+  iframe.style.border = "none";
+  iframe.style.minHeight = "90px";
+  iframe.srcdoc = makePreviewDoc(s);
   wrapper.appendChild(iframe);
 
-  iframe.onload = ()=>{
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    doc.open();
-    doc.write(
-      "<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}" +
-      css +
-      "</style>" +
-      "<body style='display:flex;align-items:center;justify-content:center;min-height:80px;padding:15px;background:#fff;'>" +
-      s.preview +
-      "</body>"
-    );
-    doc.close();
-    setTimeout(()=>{
-      const h = doc.body.scrollHeight;
-      iframe.style.height = Math.max(80, h + 10) + "px";
-    }, 100);
-  };
+  function resize(){
+    try{
+      var h = iframe.contentWindow.document.body.scrollHeight;
+      iframe.style.height = Math.max(90, h + 5) + "px";
+    }catch(e){}
+  }
+
+  iframe.addEventListener("load", function(){
+    resize();
+    setTimeout(resize, 300);
+    setTimeout(resize, 1000);
+  });
 
   return wrapper;
 }
@@ -369,29 +390,25 @@ function render(list){
     grid.innerHTML = '<p class="empty">No snippets found.</p>';
     return;
   }
-  list.forEach(s=>{
-    const card = document.createElement("div");
+  list.forEach(function(s){
+    var card = document.createElement("div");
     card.className = "card";
-    card.innerHTML = `
-      <div class="card-header">
-        <h2>${s.title}</h2>
-        <span class="badge ${s.type}">${s.type === "html" ? "HTML+JS" : "CSS"}</span>
-      </div>
-      <div class="preview-slot"></div>
-      <pre><code></code></pre>
-      <div class="card-actions">
-        <button class="copy">Copy</button>
-      </div>
-    `;
+    card.innerHTML =
+      '<div class="card-header">' +
+        '<h2>' + s.title + '</h2>' +
+        '<span class="badge ' + s.type + '">' + (s.type === "html" ? "HTML+JS" : "CSS") + '</span>' +
+      '</div>' +
+      '<div class="preview-slot"></div>' +
+      '<pre><code></code></pre>' +
+      '<div class="card-actions"><button class="copy">Copy</button></div>';
     card.querySelector("code").textContent = s.code;
-    const previewSlot = card.querySelector(".preview-slot");
-    previewSlot.appendChild(buildPreview(s));
-    const btn = card.querySelector(".copy");
-    btn.addEventListener("click", ()=>{
-      navigator.clipboard.writeText(s.code).then(()=>{
+    card.querySelector(".preview-slot").appendChild(buildPreview(s));
+    var btn = card.querySelector(".copy");
+    btn.addEventListener("click", function(){
+      navigator.clipboard.writeText(s.code).then(function(){
         btn.textContent = "Copied!";
         btn.classList.add("copied");
-        setTimeout(()=>{
+        setTimeout(function(){
           btn.textContent = "Copy";
           btn.classList.remove("copied");
         }, 1500);
@@ -402,21 +419,21 @@ function render(list){
 }
 
 function getFiltered(){
-  const value = search.value.toLowerCase();
-  return snippets.filter(s=>{
-    const matchesFilter = currentFilter === "all" || s.type === currentFilter;
-    const matchesSearch = s.title.toLowerCase().includes(value) || s.code.toLowerCase().includes(value);
+  var value = search.value.toLowerCase();
+  return snippets.filter(function(s){
+    var matchesFilter = currentFilter === "all" || s.type === currentFilter;
+    var matchesSearch = s.title.toLowerCase().indexOf(value) !== -1 || s.code.toLowerCase().indexOf(value) !== -1;
     return matchesFilter && matchesSearch;
   });
 }
 
 render(snippets);
 
-search.addEventListener("input", ()=>render(getFiltered()));
+search.addEventListener("input", function(){ render(getFiltered()); });
 
-document.querySelectorAll(".filter-btn").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+document.querySelectorAll(".filter-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".filter-btn").forEach(function(b){ b.classList.remove("active"); });
     btn.classList.add("active");
     currentFilter = btn.dataset.filter;
     render(getFiltered());
