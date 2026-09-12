@@ -69,9 +69,7 @@ window.API = {
     try {
       const products = await this.call('/api/products');
       const product = products.find(p => p.slug === slug);
-      const user = this.getUser();
-      const isAdmin = user && (user.role === 'admin' || user.role === 'super_admin');
-      return !!(product && (product.enabled || isAdmin));
+      return !!(product && product.hasAccess);
     } catch {
       return false;
     }

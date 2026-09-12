@@ -7,241 +7,44 @@
 <link rel="stylesheet" href="css/app.css">
 <script src="js/api.js"></script>
 <style>
-.kids-layout { display:flex; flex-direction:column; min-height:calc(100vh - 60px); }
-@media(min-width:768px) { .kids-layout { flex-direction:row; } }
-.kids-controls { flex:0 0 320px; padding:16px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; }
-.kids-canvas-wrap { flex:1; padding:16px; display:flex; flex-direction:column; align-items:center; }
-.kids-canvas-wrap canvas { border:4px solid rgba(255,140,0,.3); border-radius:16px; background:#fffdf5; max-width:100%; }
-.kids-title { text-align:center; font-size:1.6rem; color:#ff8c00; font-weight:bold; margin-bottom:8px; }
-.kids-sub { text-align:center; color:#7a5c1a; font-size:.85rem; margin-bottom:8px; }
-.cmd-section { background:rgba(255,255,255,.6); border:2px solid rgba(255,140,0,.15); border-radius:16px; padding:14px; }
-.cmd-section h3 { color:#ff8c00; font-size:1rem; margin-bottom:10px; }
-.cmd-buttons { display:flex; flex-wrap:wrap; gap:8px; }
-.cmd-btn { padding:12px 16px; border:none; border-radius:14px; font-weight:bold; font-size:.9rem; cursor:pointer; transition:.2s; color:#fff; }
-.cmd-btn:hover { transform:scale(1.05); }
-.cmd-btn:active { transform:scale(.95); }
-.cmd-btn.forward { background:linear-gradient(135deg,#3498db,#5dade2); }
-.cmd-btn.back { background:linear-gradient(135deg,#9b59b6,#bb8fce); }
-.cmd-btn.left { background:linear-gradient(135deg,#2ecc71,#58d68d); }
-.cmd-btn.right { background:linear-gradient(135deg,#e67e22,#f0b27a); }
-.cmd-btn.pen { background:linear-gradient(135deg,#95a5a6,#bdc3c7); }
-.cmd-btn.color { background:linear-gradient(135deg,#e74c3c,#ec7063); }
-.cmd-btn input, .cmd-btn select { width:50px; padding:2px 4px; border:none; border-radius:6px; font-size:.8rem; text-align:center; }
-.program-list { list-style:none; max-height:250px; overflow-y:auto; }
-.program-list li { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.6); border-radius:10px; margin-bottom:4px; font-size:.9rem; color:#4a3206; }
-.program-list li .cmd-text { font-family:'Courier New',monospace; }
-.program-list li button { background:rgba(231,76,60,.15); border:none; border-radius:6px; cursor:pointer; color:#c0392b; padding:2px 8px; font-size:.8rem; }
-.run-controls { display:flex; gap:8px; }
-.run-controls .btn { flex:1; text-align:center; }
-.color-palette { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-.color-dot { width:28px; height:28px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:.2s; }
-.color-dot.selected { border-color:#4a3206; transform:scale(1.15); }
-.kids-canvas-wrap .turtle-info { margin-top:8px; font-size:.8rem; color:#7a5c1a; }
+.hero { text-align:center; padding:80px 20px 40px; position:relative; }
+.hero h1 { font-size:3rem; background:linear-gradient(90deg,#ff8c00,#ffd54a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
+.hero p { color:#7a5c1a; font-size:1.2rem; max-width:500px; margin:0 auto 30px; }
+.hero .cta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.features { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; max-width:900px; margin:40px auto; padding:0 20px; }
+.feature { background:rgba(255,255,255,.5); backdrop-filter:blur(15px); border:1px solid rgba(255,140,0,.2); border-radius:20px; padding:24px; text-align:center; }
+.feature .icon { font-size:2.5rem; margin-bottom:10px; }
+.feature h3 { color:#ff8c00; margin-bottom:6px; }
+.feature p { color:#7a5c1a; font-size:.9rem; line-height:1.5; }
 </style>
 </head>
 <body>
-<div class="app-bar">
-  <h1><a href="dashboard.html">← Dashboard</a> · 🐢 Kids Coding</h1>
-  <div class="user-info" id="userInfo"></div>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<nav style="position:sticky;top:0;z-index:100;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:12px;background:linear-gradient(90deg,rgba(255,140,0,.9),rgba(255,213,74,.9));backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.3);">
+<a href="index.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Home</a>
+<a href="coding.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Coding</a>
+<a href="builder.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Builder</a>
+<a href="coding-kids.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.6);font-weight:bold;">Kids</a>
+<a href="login.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Login</a>
+</nav>
+
+<section class="hero">
+<h1>🐢 Coding for Kids</h1>
+<p>Fun, simple coding activities for young learners — control a turtle with easy commands!</p>
+<div class="cta">
+<a href="coding-kids-editor.html" class="btn">Start Playing →</a>
+<a href="login.html" class="btn btn-secondary">Login</a>
+<a href="signup.html" class="btn btn-secondary">Sign Up</a>
 </div>
+</section>
 
-<div id="notAvailable" class="not-available" style="display:none;">
-  <h2>🔒 Product Not Available</h2>
-  <p>Coding for Kids has not been enabled yet. Please contact your admin.</p>
-  <a href="dashboard.html" class="btn">Back to Dashboard</a>
-</div>
-
-<div id="content" class="kids-layout" style="display:none;">
-  <div class="kids-controls">
-    <div class="kids-title">🐢 Turtle Coding</div>
-    <div class="kids-sub">Click buttons to add commands, then press Run!</div>
-
-    <div class="cmd-section">
-      <h3>Movement</h3>
-      <div class="cmd-buttons">
-        <button class="cmd-btn forward" onclick="addCmd('forward')">⬆ Forward <input type="number" id="fwd-amount" value="50" min="1" max="300" onclick="event.stopPropagation()"></button>
-        <button class="cmd-btn back" onclick="addCmd('back')">⬇ Back <input type="number" id="back-amount" value="50" min="1" max="300" onclick="event.stopPropagation()"></button>
-        <button class="cmd-btn left" onclick="addCmd('left')">↺ Left <input type="number" id="left-amount" value="90" min="1" max="360" onclick="event.stopPropagation()"></button>
-        <button class="cmd-btn right" onclick="addCmd('right')">↻ Right <input type="number" id="right-amount" value="90" min="1" max="360" onclick="event.stopPropagation()"></button>
-      </div>
-    </div>
-
-    <div class="cmd-section">
-      <h3>Pen & Color</h3>
-      <div class="cmd-buttons">
-        <button class="cmd-btn pen" onclick="addCmd('penup')">✏️ Pen Up</button>
-        <button class="cmd-btn pen" onclick="addCmd('pendown')">✏️ Pen Down</button>
-      </div>
-      <div class="color-palette" id="colorPalette"></div>
-    </div>
-
-    <div class="cmd-section">
-      <h3>Your Program</h3>
-      <ul class="program-list" id="programList"></ul>
-      <div class="run-controls">
-        <button class="btn" onclick="runProgram()">▶ Run</button>
-        <button class="btn btn-secondary" onclick="clearProgram()">Clear</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="kids-canvas-wrap">
-    <canvas id="turtleCanvas" width="400" height="400"></canvas>
-    <div class="turtle-info" id="turtleInfo">🐢 Ready to code!</div>
-  </div>
-</div>
-
-<script>
-if (!API.requireAuth()) throw new Error('redirect');
-
-const user = API.getUser();
-document.getElementById('userInfo').innerHTML =
-  `<span class="role-badge">${user.role.replace('_', ' ')}</span>
-   <button class="logout-btn" onclick="API.logout()">Logout</button>`;
-
-API.checkProduct('coding-kids').then(enabled => {
-  if (enabled) {
-    document.getElementById('content').style.display = 'flex';
-    initTurtle();
-  } else {
-    document.getElementById('notAvailable').style.display = 'block';
-  }
-});
-
-// Colors
-const colors = ['#ff8c00','#e74c3c','#3498db','#2ecc71','#9b59b6','#f1c40f','#1abc9c','#e67e22'];
-let selectedColor = '#ff8c00';
-
-function initColorPalette() {
-  const palette = document.getElementById('colorPalette');
-  palette.innerHTML = colors.map(c =>
-    `<div class="color-dot ${c === selectedColor ? 'selected' : ''}" style="background:${c}" onclick="selectColor('${c}')"></div>`
-  ).join('');
-}
-
-function selectColor(c) {
-  selectedColor = c;
-  initColorPalette();
-  addCmd('color', c);
-}
-
-// Program
-let program = [];
-
-function addCmd(type, value) {
-  if (type === 'forward') value = parseInt(document.getElementById('fwd-amount').value) || 50;
-  else if (type === 'back') value = parseInt(document.getElementById('back-amount').value) || 50;
-  else if (type === 'left') value = parseInt(document.getElementById('left-amount').value) || 90;
-  else if (type === 'right') value = parseInt(document.getElementById('right-amount').value) || 90;
-  else if (type === 'color') { /* value already set */ }
-  else value = null;
-  program.push({ type, value });
-  renderProgram();
-}
-
-function removeCmd(index) {
-  program.splice(index, 1);
-  renderProgram();
-}
-
-function clearProgram() {
-  program = [];
-  renderProgram();
-  resetTurtle();
-}
-
-function renderProgram() {
-  const list = document.getElementById('programList');
-  if (program.length === 0) {
-    list.innerHTML = '<li style="color:#7a5c1a; justify-content:center;">No commands yet. Add some above!</li>';
-    return;
-  }
-  list.innerHTML = program.map((cmd, i) => {
-    let text = cmd.type;
-    if (cmd.value !== null) text += ` (${cmd.value})`;
-    if (cmd.type === 'color') text = `color (${cmd.value})`;
-    return `<li><span class="cmd-text">${i + 1}. ${text}</span><button onclick="removeCmd(${i})">✕</button></li>`;
-  }).join('');
-}
-
-// Turtle
-let turtle = {};
-let ctx;
-
-function initTurtle() {
-  initColorPalette();
-  resetTurtle();
-}
-
-function resetTurtle() {
-  const canvas = document.getElementById('turtleCanvas');
-  ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  turtle = { x: canvas.width / 2, y: canvas.height / 2, angle: -90, penDown: true, color: '#ff8c00' };
-  drawTurtle();
-  document.getElementById('turtleInfo').textContent = '🐢 Ready to code!';
-}
-
-function drawTurtle() {
-  // Draw turtle emoji at position
-  ctx.save();
-  ctx.translate(turtle.x, turtle.y);
-  ctx.rotate(turtle.angle * Math.PI / 180);
-  ctx.font = '20px serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🐢', 0, 0);
-  ctx.restore();
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-async function runProgram() {
-  resetTurtle();
-  document.getElementById('turtleInfo').textContent = '🐢 Running...';
-
-  // Clear turtle, keep background
-  ctx.fillStyle = '#fffdf5';
-  ctx.fillRect(0, 0, 400, 400);
-
-  for (let i = 0; i < program.length; i++) {
-    const cmd = program[i];
-    document.getElementById('turtleInfo').textContent = `🐢 Step ${i + 1}/${program.length}: ${cmd.type}`;
-
-    if (cmd.type === 'color') {
-      turtle.color = cmd.value;
-    } else if (cmd.type === 'penup') {
-      turtle.penDown = false;
-    } else if (cmd.type === 'pendown') {
-      turtle.penDown = true;
-    } else if (cmd.type === 'forward' || cmd.type === 'back') {
-      const dist = cmd.type === 'forward' ? cmd.value : -cmd.value;
-      const rad = turtle.angle * Math.PI / 180;
-      const newX = turtle.x + Math.cos(rad) * dist;
-      const newY = turtle.y + Math.sin(rad) * dist;
-      if (turtle.penDown) {
-        ctx.strokeStyle = turtle.color;
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(turtle.x, turtle.y);
-        ctx.lineTo(newX, newY);
-        ctx.stroke();
-      }
-      turtle.x = newX;
-      turtle.y = newY;
-    } else if (cmd.type === 'left') {
-      turtle.angle -= cmd.value;
-    } else if (cmd.type === 'right') {
-      turtle.angle += cmd.value;
-    }
-
-    drawTurtle();
-    await sleep(300);
-  }
-
-  document.getElementById('turtleInfo').textContent = '✅ Done! Press Run to play again.';
-}
-</script>
+<section class="features">
+<div class="feature"><div class="icon">🐢</div><h3>Turtle Graphics</h3><p>Control a turtle on a canvas and watch it draw shapes as it moves.</p></div>
+<div class="feature"><div class="icon">🎨</div><h3>Colorful Commands</h3><p>Click colorful buttons to add movement, turning, and color commands.</p></div>
+<div class="feature"><div class="icon">▶️</div><h3>Watch It Run</h3><p>Press Run and see your turtle execute each command step by step.</p></div>
+<div class="feature"><div class="icon">🌟</div><h3>Easy & Fun</h3><p>No typing needed — just click buttons and see instant results!</p></div>
+</section>
 </body>
 </html>

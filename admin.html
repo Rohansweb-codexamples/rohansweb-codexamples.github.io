@@ -10,18 +10,23 @@
 .section { background:rgba(255,255,255,.5); backdrop-filter:blur(15px); border:1px solid rgba(255,140,0,.2); border-radius:20px; padding:24px; margin-bottom:24px; }
 .section h2 { color:#ff8c00; margin-bottom:16px; font-size:1.4rem; }
 .form-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
-.form-row .form-group { flex:1; min-width:150px; }
-.user-list { list-style:none; }
-.user-list li { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,140,0,.1); }
-.user-list li:last-child { border-bottom:none; }
-.user-list .user-name { font-weight:bold; color:#4a3206; }
-.user-list .user-role { font-size:.75rem; padding:2px 10px; border-radius:20px; background:rgba(255,140,0,.15); color:#4a2000; text-transform:capitalize; }
-.product-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(255,140,0,.1); }
-.product-row:last-child { border-bottom:none; }
-.product-row .product-info h3 { font-size:1.1rem; color:#4a3206; margin-bottom:2px; }
-.product-row .product-info p { font-size:.8rem; color:#7a5c1a; }
+.form-row .form-group { flex:1; min-width:130px; }
+.product-checks { display:flex; flex-direction:column; gap:8px; margin:10px 0; }
+.product-checks label { display:flex; align-items:center; gap:8px; font-size:.9rem; color:#4a3206; cursor:pointer; }
+.student-card { background:rgba(255,255,255,.6); border:1px solid rgba(255,140,0,.2); border-radius:14px; padding:14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.student-info { flex:1; min-width:150px; }
+.student-name { font-weight:bold; color:#4a3206; font-size:1rem; }
+.student-meta { font-size:.8rem; color:#7a5c1a; margin-top:2px; }
+.student-products { display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; }
+.product-badge { font-size:.7rem; padding:2px 8px; border-radius:10px; background:rgba(255,140,0,.15); color:#4a2000; }
+.student-actions { display:flex; gap:6px; }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:200; padding:20px; }
+.modal-overlay.show { display:flex; }
+.modal { background:#fff; border-radius:20px; padding:28px; max-width:450px; width:100%; max-height:85vh; overflow:auto; }
+.modal h2 { color:#ff8c00; margin-bottom:16px; }
 .back-link { margin-bottom:20px; }
 .back-link a { color:#7a5c1a; text-decoration:none; font-size:.9rem; }
+.sub-header { color:#ff8c00; margin:24px 0 10px; font-size:1.1rem; }
 </style>
 </head>
 <body>
@@ -36,28 +41,62 @@
 <div class="content">
   <div class="back-link"><a href="dashboard.html">← Back to Dashboard</a></div>
 
-  <!-- Create user section -->
-  <div class="section" id="createSection">
-    <h2 id="createTitle">Create Student</h2>
+  <div class="section">
+    <h2>Create Student</h2>
     <div class="error-msg" id="createError"></div>
     <div class="success-msg" id="createSuccess"></div>
     <form id="createForm">
-      <div class="form-row" id="createFormFields"></div>
-      <button type="submit" class="btn" style="margin-top:14px;">Create</button>
+      <div class="form-row">
+        <div class="form-group"><label>Username</label><input type="text" id="newUsername" placeholder="Student username" required></div>
+        <div class="form-group"><label>Password</label><input type="text" id="newPassword" placeholder="Password" required></div>
+        <div class="form-group"><label>Class</label><input type="text" id="newClass" placeholder="e.g., 5A"></div>
+      </div>
+      <label style="font-weight:bold;color:#4a3206;font-size:.85rem;display:block;margin:12px 0 6px;">Enable Products</label>
+      <div class="product-checks" id="createProductChecks"></div>
+      <button type="submit" class="btn" style="margin-top:10px;">Create Student</button>
     </form>
   </div>
 
-  <!-- User list -->
   <div class="section">
-    <h2 id="usersTitle">My Students</h2>
-    <ul class="user-list" id="userList"></ul>
+    <h2 id="studentsTitle">My Students</h2>
+    <div id="studentList"></div>
   </div>
 
-  <!-- Product toggles -->
-  <div class="section">
-    <h2>Manage Products</h2>
-    <p style="color:#7a5c1a; margin-bottom:16px; font-size:.85rem;">Enable or disable products for all users.</p>
-    <div id="productList"></div>
+  <div class="section" id="adminSection" style="display:none;">
+    <h2>Create Admin</h2>
+    <div class="error-msg" id="adminError"></div>
+    <div class="success-msg" id="adminSuccess"></div>
+    <form id="adminForm">
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" id="adminEmail" placeholder="admin@email.com" required></div>
+        <div class="form-group"><label>Password</label><input type="text" id="adminPassword" placeholder="Password" required></div>
+      </div>
+      <button type="submit" class="btn" style="margin-top:10px;">Create Admin</button>
+    </form>
+  </div>
+
+  <div class="section" id="websiteEditorSection" style="display:none;">
+    <h2>Website Editor</h2>
+    <p style="color:#7a5c1a;margin-bottom:12px;font-size:.9rem;">Edit the HTML pages of your website directly.</p>
+    <a href="website-editor.html" class="btn">Edit Website →</a>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2>Edit Student</h2>
+    <div class="error-msg" id="editError"></div>
+    <form id="editForm">
+      <input type="hidden" id="editId">
+      <div class="form-group"><label>New Password (leave blank to keep)</label><input type="text" id="editPassword" placeholder="New password"></div>
+      <div class="form-group"><label>Class</label><input type="text" id="editClass" placeholder="e.g., 5A"></div>
+      <label style="font-weight:bold;color:#4a3206;font-size:.85rem;display:block;margin:12px 0 6px;">Products</label>
+      <div class="product-checks" id="editProductChecks"></div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button type="submit" class="btn">Save Changes</button>
+        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -65,104 +104,140 @@
 if (!API.requireAuth()) throw new Error('redirect');
 const user = API.getUser();
 if (!API.requireRole('admin', 'super_admin')) throw new Error('redirect');
-
-document.getElementById('userInfo').innerHTML =
-  `<span class="role-badge">${user.role.replace('_', ' ')}</span>
-   <button class="logout-btn" onclick="API.logout()">Logout</button>`;
-
 const isSuperAdmin = user.role === 'super_admin';
 
-// Build create form
+document.getElementById('userInfo').innerHTML =
+  `<span class="role-badge">${user.role.replace('_',' ')}</span>
+   <button class="logout-btn" onclick="API.logout()">Logout</button>`;
+
 if (isSuperAdmin) {
-  document.getElementById('createTitle').textContent = 'Create Admin';
-  document.getElementById('usersTitle').textContent = 'All Users';
-  document.getElementById('createFormFields').innerHTML = `
-    <div class="form-group"><label>Email</label><input type="email" id="newEmail" placeholder="admin@email.com" required></div>
-    <div class="form-group"><label>Password</label><input type="text" id="newPassword" placeholder="Password" required></div>`;
-} else {
-  document.getElementById('createFormFields').innerHTML = `
-    <div class="form-group"><label>Username</label><input type="text" id="newUsername" placeholder="Student username" required></div>
-    <div class="form-group"><label>Password</label><input type="text" id="newPassword" placeholder="Password" required></div>`;
+  document.getElementById('adminSection').style.display = 'block';
+  document.getElementById('websiteEditorSection').style.display = 'block';
+  document.getElementById('studentsTitle').textContent = 'All Users';
 }
 
+let productDefs = [];
+async function loadProducts() {
+  productDefs = await API.call('/api/products');
+  renderChecks('createProductChecks', []);
+}
+function renderChecks(containerId, selected) {
+  document.getElementById(containerId).innerHTML = productDefs.map(p =>
+    `<label><input type="checkbox" value="${p.slug}" ${selected.includes(p.slug)?'checked':''}> ${p.name}</label>`
+  ).join('');
+}
+function getChecks(containerId) {
+  return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(cb => cb.value);
+}
+
+// Create student
 document.getElementById('createForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const errEl = document.getElementById('createError');
-  const successEl = document.getElementById('createSuccess');
-  errEl.classList.remove('show');
-  successEl.classList.remove('show');
-  const password = document.getElementById('newPassword').value;
+  const err = document.getElementById('createError'), succ = document.getElementById('createSuccess');
+  err.classList.remove('show'); succ.classList.remove('show');
   try {
-    if (isSuperAdmin) {
-      const email = document.getElementById('newEmail').value.trim();
-      await API.call('/api/superadmin/create-admin', { method: 'POST', body: { email, password } });
-    } else {
-      const username = document.getElementById('newUsername').value.trim();
-      await API.call('/api/admin/create-student', { method: 'POST', body: { username, password } });
-    }
-    successEl.textContent = isSuperAdmin ? 'Admin created successfully!' : 'Student created successfully!';
-    successEl.classList.add('show');
-    e.target.reset();
-    loadUsers();
-  } catch (err) {
-    errEl.textContent = err.message;
-    errEl.classList.add('show');
-  }
+    await API.call('/api/admin/create-student', { method: 'POST', body: {
+      username: document.getElementById('newUsername').value.trim(),
+      password: document.getElementById('newPassword').value,
+      className: document.getElementById('newClass').value.trim() || null,
+      products: getChecks('createProductChecks')
+    }});
+    succ.textContent = 'Student created!'; succ.classList.add('show');
+    e.target.reset(); renderChecks('createProductChecks', []); loadStudents();
+  } catch (ex) { err.textContent = ex.message; err.classList.add('show'); }
 });
 
-// Load users
-async function loadUsers() {
+// Create admin
+if (isSuperAdmin) {
+  document.getElementById('adminForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = document.getElementById('adminError'), succ = document.getElementById('adminSuccess');
+    err.classList.remove('show'); succ.classList.remove('show');
+    try {
+      await API.call('/api/superadmin/create-admin', { method: 'POST', body: {
+        email: document.getElementById('adminEmail').value.trim(),
+        password: document.getElementById('adminPassword').value
+      }});
+      succ.textContent = 'Admin created!'; succ.classList.add('show');
+      e.target.reset(); loadStudents();
+    } catch (ex) { err.textContent = ex.message; err.classList.add('show'); }
+  });
+}
+
+// Load students
+async function loadStudents() {
   try {
     const users = await API.call('/api/admin/users');
-    const list = document.getElementById('userList');
-    if (users.length === 0) {
-      list.innerHTML = '<li style="color:#7a5c1a;">No users yet.</li>';
-      return;
+    const students = users.filter(u => u.role === 'student');
+    const admins = users.filter(u => u.role === 'admin');
+    let html = '';
+    if (students.length) {
+      html += students.map(s => `
+        <div class="student-card">
+          <div class="student-info">
+            <div class="student-name">${s.username}</div>
+            <div class="student-meta">Class: ${s.class || 'Not set'}</div>
+            <div class="student-products">${(s.products||[]).map(p=>`<span class="product-badge">${p}</span>`).join('') || '<span style="font-size:.75rem;color:#999;">No products enabled</span>'}</div>
+          </div>
+          <div class="student-actions">
+            <button class="btn btn-secondary" style="padding:6px 12px;font-size:.8rem;" onclick="editStudent(${s.id})">Edit</button>
+            <button class="btn btn-danger" style="padding:6px 12px;font-size:.8rem;" onclick="deleteUser(${s.id},'${s.username}')">Delete</button>
+          </div>
+        </div>`).join('');
     }
-    list.innerHTML = users.map(u => {
-      const name = u.email || u.username || 'Unknown';
-      return `<li>
-        <span class="user-name">${name}</span>
-        <span class="user-role">${u.role}</span>
-      </li>`;
-    }).join('');
-  } catch (err) {
-    document.getElementById('userList').innerHTML = `<li style="color:#c0392b;">${err.message}</li>`;
+    if (isSuperAdmin && admins.length) {
+      html += '<h3 class="sub-header">Admins</h3>';
+      html += admins.map(a => `
+        <div class="student-card">
+          <div class="student-info"><div class="student-name">${a.email}</div><div class="student-meta">Role: Admin</div></div>
+          <div class="student-actions"><button class="btn btn-danger" style="padding:6px 12px;font-size:.8rem;" onclick="deleteUser(${a.id},'${a.email}')">Delete</button></div>
+        </div>`).join('');
+    }
+    if (!students.length && (!isSuperAdmin || !admins.length)) {
+      html = '<p style="color:#7a5c1a;">No students yet. Create one above!</p>';
+    }
+    document.getElementById('studentList').innerHTML = html;
+  } catch (ex) {
+    document.getElementById('studentList').innerHTML = `<p style="color:#c0392b;">${ex.message}</p>`;
   }
 }
-loadUsers();
 
-// Load products with toggles
-async function loadProducts() {
+// Edit student
+let editingId = null;
+async function editStudent(id) {
   try {
-    const products = await API.call('/api/products');
-    const container = document.getElementById('productList');
-    container.innerHTML = products.map(p => `
-      <div class="product-row">
-        <div class="product-info">
-          <h3>${p.name}</h3>
-          <p>${p.description}</p>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="toggle-${p.id}" ${p.enabled ? 'checked' : ''} onchange="toggleProduct(${p.id})">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-    `).join('');
-  } catch (err) {
-    document.getElementById('productList').innerHTML = `<p style="color:#c0392b;">${err.message}</p>`;
-  }
+    const users = await API.call('/api/admin/users');
+    const s = users.find(u => u.id === id);
+    if (!s) return;
+    editingId = id;
+    document.getElementById('editPassword').value = '';
+    document.getElementById('editClass').value = s.class || '';
+    renderChecks('editProductChecks', s.products || []);
+    document.getElementById('editError').classList.remove('show');
+    document.getElementById('editModal').classList.add('show');
+  } catch (ex) { alert(ex.message); }
 }
-loadProducts();
+function closeEditModal() { document.getElementById('editModal').classList.remove('show'); editingId = null; }
 
-async function toggleProduct(id) {
+document.getElementById('editForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = document.getElementById('editError'); err.classList.remove('show');
   try {
-    await API.call('/api/admin/toggle-product', { method: 'POST', body: { productId: id } });
-  } catch (err) {
-    alert(err.message);
-    loadProducts();
-  }
+    const body = { className: document.getElementById('editClass').value.trim() || null, products: getChecks('editProductChecks') };
+    const pw = document.getElementById('editPassword').value;
+    if (pw) body.password = pw;
+    await API.call(`/api/admin/student/${editingId}`, { method: 'PUT', body });
+    closeEditModal(); loadStudents();
+  } catch (ex) { err.textContent = ex.message; err.classList.add('show'); }
+});
+
+async function deleteUser(id, name) {
+  if (!confirm(`Delete ${name}?`)) return;
+  try { await API.call(`/api/admin/user/${id}`, { method: 'DELETE' }); loadStudents(); }
+  catch (ex) { alert(ex.message); }
 }
+
+loadProducts().then(loadStudents);
 </script>
 </body>
 </html>

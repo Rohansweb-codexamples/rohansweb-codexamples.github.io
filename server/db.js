@@ -26,15 +26,29 @@ function initializeDB() {
     changed = true;
   }
 
+  // Migrate products: remove 'enabled' field
+  if (db.products && db.products.length > 0 && 'enabled' in db.products[0]) {
+    db.products = db.products.map(({ enabled, ...rest }) => rest);
+    changed = true;
+  }
+
+  // Seed products
   if (!db.products || db.products.length === 0) {
     db.products = [
-      { id: 1, name: 'Coding Site', slug: 'coding', enabled: false, description: 'Write and run HTML, CSS, and JavaScript code in your browser.' },
-      { id: 2, name: 'Website Builder', slug: 'builder', enabled: false, description: 'Build your own web pages with a visual editor.' },
-      { id: 3, name: 'Coding for Kids', slug: 'coding-kids', enabled: false, description: 'Fun, simple coding activities for young learners.' }
+      { id: 1, name: 'Coding Site', slug: 'coding', description: 'Write and run HTML, CSS, and JavaScript code in your browser.' },
+      { id: 2, name: 'Website Builder', slug: 'builder', description: 'Build your own web pages with a visual editor.' },
+      { id: 3, name: 'Coding for Kids', slug: 'coding-kids', description: 'Fun, simple coding activities for young learners.' }
     ];
     changed = true;
   }
 
+  // Migrate users: add products and class fields
+  db.users.forEach(u => {
+    if (u.products === undefined) { u.products = []; changed = true; }
+    if (u.class === undefined) { u.class = null; changed = true; }
+  });
+
+  // Seed super admin
   if (!db.users.find(u => u.email === 'rohanwest@rohansweb.co.uk')) {
     const hash = bcrypt.hashSync('Ewanandlam100', 10);
     db.users.push({
@@ -44,6 +58,8 @@ function initializeDB() {
       password: hash,
       role: 'super_admin',
       createdBy: null,
+      class: null,
+      products: [],
       createdAt: new Date().toISOString()
     });
     changed = true;
