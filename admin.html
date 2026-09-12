@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Panel - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.section { background:rgba(255,255,255,.5); backdrop-filter:blur(15px); border:1px solid rgba(255,140,0,.2); border-radius:20px; padding:24px; margin-bottom:24px; }
+.section h2 { color:#ff8c00; margin-bottom:16px; font-size:1.4rem; }
+.form-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+.form-row .form-group { flex:1; min-width:150px; }
+.user-list { list-style:none; }
+.user-list li { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(255,140,0,.1); }
+.user-list li:last-child { border-bottom:none; }
+.user-list .user-name { font-weight:bold; color:#4a3206; }
+.user-list .user-role { font-size:.75rem; padding:2px 10px; border-radius:20px; background:rgba(255,140,0,.15); color:#4a2000; text-transform:capitalize; }
+.product-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(255,140,0,.1); }
+.product-row:last-child { border-bottom:none; }
+.product-row .product-info h3 { font-size:1.1rem; color:#4a3206; margin-bottom:2px; }
+.product-row .product-info p { font-size:.8rem; color:#7a5c1a; }
+.back-link { margin-bottom:20px; }
+.back-link a { color:#7a5c1a; text-decoration:none; font-size:.9rem; }
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<div class="app-bar">
+  <h1><a href="index.html">Rohans Web</a> · Admin</h1>
+  <div class="user-info" id="userInfo"></div>
+</div>
+
+<div class="content">
+  <div class="back-link"><a href="dashboard.html">← Back to Dashboard</a></div>
+
+  <!-- Create user section -->
+  <div class="section" id="createSection">
+    <h2 id="createTitle">Create Student</h2>
+    <div class="error-msg" id="createError"></div>
+    <div class="success-msg" id="createSuccess"></div>
+    <form id="createForm">
+      <div class="form-row" id="createFormFields"></div>
+      <button type="submit" class="btn" style="margin-top:14px;">Create</button>
+    </form>
+  </div>
+
+  <!-- User list -->
+  <div class="section">
+    <h2 id="usersTitle">My Students</h2>
+    <ul class="user-list" id="userList"></ul>
+  </div>
+
+  <!-- Product toggles -->
+  <div class="section">
+    <h2>Manage Products</h2>
+    <p style="color:#7a5c1a; margin-bottom:16px; font-size:.85rem;">Enable or disable products for all users.</p>
+    <div id="productList"></div>
+  </div>
+</div>
+
+<script>
+if (!API.requireAuth()) throw new Error('redirect');
+const user = API.getUser();
+if (!API.requireRole('admin', 'super_admin')) throw new Error('redirect');
+
+document.getElementById('userInfo').innerHTML =
+  `<span class="role-badge">${user.role.replace('_', ' ')}</span>
+   <button class="logout-btn" onclick="API.logout()">Logout</button>`;
+
+const isSuperAdmin = user.role === 'super_admin';
+
+// Build create form
+if (isSuperAdmin) {
+  document.getElementById('createTitle').textContent = 'Create Admin';
+  document.getElementById('usersTitle').textContent = 'All Users';
+  document.getElementById('createFormFields').innerHTML = `
+    <div class="form-group"><label>Email</label><input type="email" id="newEmail" placeholder="admin@email.com" required></div>
+    <div class="form-group"><label>Password</label><input type="text" id="newPassword" placeholder="Password" required></div>`;
+} else {
+  document.getElementById('createFormFields').innerHTML = `
+    <div class="form-group"><label>Username</label><input type="text" id="newUsername" placeholder="Student username" required></div>
+    <div class="form-group"><label>Password</label><input type="text" id="newPassword" placeholder="Password" required></div>`;
+}
+
+document.getElementById('createForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('createError');
+  const successEl = document.getElementById('createSuccess');
+  errEl.classList.remove('show');
+  successEl.classList.remove('show');
+  const password = document.getElementById('newPassword').value;
+  try {
+    if (isSuperAdmin) {
+      const email = document.getElementById('newEmail').value.trim();
+      await API.call('/api/superadmin/create-admin', { method: 'POST', body: { email, password } });
+    } else {
+      const username = document.getElementById('newUsername').value.trim();
+      await API.call('/api/admin/create-student', { method: 'POST', body: { username, password } });
+    }
+    successEl.textContent = isSuperAdmin ? 'Admin created successfully!' : 'Student created successfully!';
+    successEl.classList.add('show');
+    e.target.reset();
+    loadUsers();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.add('show');
+  }
+});
+
+// Load users
+async function loadUsers() {
+  try {
+    const users = await API.call('/api/admin/users');
+    const list = document.getElementById('userList');
+    if (users.length === 0) {
+      list.innerHTML = '<li style="color:#7a5c1a;">No users yet.</li>';
+      return;
+    }
+    list.innerHTML = users.map(u => {
+      const name = u.email || u.username || 'Unknown';
+      return `<li>
+        <span class="user-name">${name}</span>
+        <span class="user-role">${u.role}</span>
+      </li>`;
+    }).join('');
+  } catch (err) {
+    document.getElementById('userList').innerHTML = `<li style="color:#c0392b;">${err.message}</li>`;
+  }
+}
+loadUsers();
+
+// Load products with toggles
+async function loadProducts() {
+  try {
+    const products = await API.call('/api/products');
+    const container = document.getElementById('productList');
+    container.innerHTML = products.map(p => `
+      <div class="product-row">
+        <div class="product-info">
+          <h3>${p.name}</h3>
+          <p>${p.description}</p>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-${p.id}" ${p.enabled ? 'checked' : ''} onchange="toggleProduct(${p.id})">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    `).join('');
+  } catch (err) {
+    document.getElementById('productList').innerHTML = `<p style="color:#c0392b;">${err.message}</p>`;
+  }
+}
+loadProducts();
+
+async function toggleProduct(id) {
+  try {
+    await API.call('/api/admin/toggle-product', { method: 'POST', body: { productId: id } });
+  } catch (err) {
+    alert(err.message);
+    loadProducts();
+  }
+}
+</script>
+</body>
+</html>

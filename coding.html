@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coding Site - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.editor-layout { display:flex; flex-direction:column; height:calc(100vh - 60px); }
+.tabs { display:flex; gap:4px; padding:8px 12px 0; background:rgba(255,140,0,.08); }
+.tab { padding:10px 20px; border:none; border-radius:10px 10px 0 0; background:rgba(255,255,255,.5); color:#7a5c1a; font-weight:bold; cursor:pointer; font-size:.85rem; }
+.tab.active { background:#fff; color:#ff8c00; }
+.code-area { flex:1; display:flex; flex-direction:column; background:#fff; border-radius:12px; margin:0 12px 8px; overflow:hidden; }
+.code-area textarea { flex:1; width:100%; border:none; outline:none; padding:16px; font-family:'Courier New',monospace; font-size:14px; resize:none; background:#fff; color:#333; }
+.code-pane { display:none; flex:1; flex-direction:column; }
+.code-pane.active { display:flex; }
+.toolbar { display:flex; gap:8px; align-items:center; padding:8px 12px; flex-wrap:wrap; }
+.toolbar label { font-size:.85rem; color:#7a5c1a; display:flex; align-items:center; gap:4px; }
+.preview-wrap { flex:1; margin:0 12px 12px; border-radius:12px; overflow:hidden; border:2px solid rgba(255,140,0,.2); background:#fff; min-height:200px; }
+.preview-wrap iframe { width:100%; height:100%; border:none; }
+.split { display:flex; flex-direction:column; flex:1; overflow:hidden; }
+@media(min-width:768px) {
+  .split { flex-direction:row; }
+  .editor-layout { flex-direction:row; }
+  .code-area { margin:0 0 0 12px; }
+  .preview-wrap { margin:0 12px 0 0; }
+}
+</style>
+</head>
+<body>
+<div class="app-bar">
+  <h1><a href="dashboard.html">← Dashboard</a> · Coding Site</h1>
+  <div class="user-info" id="userInfo"></div>
+</div>
+
+<div id="notAvailable" class="not-available" style="display:none;">
+  <h2>🔒 Product Not Available</h2>
+  <p>The Coding Site has not been enabled yet. Please contact your admin.</p>
+  <a href="dashboard.html" class="btn">Back to Dashboard</a>
+</div>
+
+<div id="content" class="editor-layout" style="display:none;">
+  <div class="split">
+    <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+      <div class="tabs">
+        <button class="tab active" data-pane="html">HTML</button>
+        <button class="tab" data-pane="css">CSS</button>
+        <button class="tab" data-pane="js">JS</button>
+      </div>
+      <div class="code-area">
+        <div class="code-pane active" id="pane-html"><textarea id="code-html" spellcheck="false" placeholder="<!-- Write your HTML here -->"></textarea></div>
+        <div class="code-pane" id="pane-css"><textarea id="code-css" spellcheck="false" placeholder="/* Write your CSS here */"></textarea></div>
+        <div class="code-pane" id="pane-js"><textarea id="code-js" spellcheck="false" placeholder="// Write your JavaScript here"></textarea></div>
+      </div>
+    </div>
+    <div class="preview-wrap">
+      <iframe id="preview" sandbox="allow-scripts"></iframe>
+    </div>
+  </div>
+  <div class="toolbar">
+    <button class="btn" onclick="runCode()">▶ Run</button>
+    <label><input type="checkbox" id="autoRun"> Auto-run</label>
+    <button class="btn btn-secondary" onclick="clearCode()">Clear</button>
+    <button class="btn btn-secondary" onclick="saveCode()">Save</button>
+    <span id="saveStatus" style="font-size:.8rem;color:#7a5c1a;"></span>
+  </div>
+</div>
+
+<script>
+if (!API.requireAuth()) throw new Error('redirect');
+
+const user = API.getUser();
+document.getElementById('userInfo').innerHTML =
+  `<span class="role-badge">${user.role.replace('_', ' ')}</span>
+   <button class="logout-btn" onclick="API.logout()">Logout</button>`;
+
+API.checkProduct('coding').then(enabled => {
+  if (enabled) {
+    document.getElementById('content').style.display = 'flex';
+    loadSaved();
+    runCode();
+  } else {
+    document.getElementById('notAvailable').style.display = 'block';
+  }
+});
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.code-pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('pane-' + tab.dataset.pane).classList.add('active');
+  });
+});
+
+// Auto-run
+let autoRunTimer;
+['code-html', 'code-css', 'code-js'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    if (document.getElementById('autoRun').checked) {
+      clearTimeout(autoRunTimer);
+      autoRunTimer = setTimeout(runCode, 500);
+    }
+  });
+});
+
+function runCode() {
+  const html = document.getElementById('code-html').value;
+  const css = document.getElementById('code-css').value;
+  const js = document.getElementById('code-js').value;
+  const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+  document.getElementById('preview').srcdoc = doc;
+}
+
+function clearCode() {
+  if (!confirm('Clear all code?')) return;
+  document.getElementById('code-html').value = '';
+  document.getElementById('code-css').value = '';
+  document.getElementById('code-js').value = '';
+  runCode();
+  localStorage.removeItem('rw_coding');
+  showSaveStatus('Cleared');
+}
+
+function saveCode() {
+  localStorage.setItem('rw_coding', JSON.stringify({
+    html: document.getElementById('code-html').value,
+    css: document.getElementById('code-css').value,
+    js: document.getElementById('code-js').value
+  }));
+  showSaveStatus('Saved!');
+}
+
+function loadSaved() {
+  const saved = localStorage.getItem('rw_coding');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      document.getElementById('code-html').value = data.html || '';
+      document.getElementById('code-css').value = data.css || '';
+      document.getElementById('code-js').value = data.js || '';
+    } catch {}
+  } else {
+    document.getElementById('code-html').value = '<h1>Hello World!</h1>\n<p>Start coding here...</p>';
+    document.getElementById('code-css').value = 'body { font-family: Arial; padding: 20px; }\nh1 { color: #ff8c00; }';
+  }
+}
+
+function showSaveStatus(msg) {
+  const el = document.getElementById('saveStatus');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 2000);
+}
+</script>
+</body>
+</html>

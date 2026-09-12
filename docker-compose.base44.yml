@@ -1,12 +1,18 @@
 services:
   web:
-    image: nginx:alpine
-    ports:
-      - "3000:80"
+    image: node:22-slim
+    working_dir: /app
     volumes:
-      - ./:/usr/share/nginx/html:ro
+      - ./:/app
+    ports:
+      - "3000:3000"
+    command: sh -c "cd /app/server && npm install && node server.js"
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 5s
       timeout: 3s
-      retries: 3
+      retries: 10
+      start_period: 30s
