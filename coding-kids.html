@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coding for Kids - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.hero { text-align:center; padding:80px 20px 40px; position:relative; }
+.hero h1 { font-size:3rem; background:linear-gradient(90deg,#ff8c00,#ffd54a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
+.hero p { color:#7a5c1a; font-size:1.2rem; max-width:500px; margin:0 auto 30px; }
+.hero .cta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.features { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; max-width:900px; margin:40px auto; padding:0 20px; }
+.feature { background:rgba(255,255,255,.5); backdrop-filter:blur(15px); border:1px solid rgba(255,140,0,.2); border-radius:20px; padding:24px; text-align:center; }
+.feature .icon { font-size:2.5rem; margin-bottom:10px; }
+.feature h3 { color:#ff8c00; margin-bottom:6px; }
+.feature p { color:#7a5c1a; font-size:.9rem; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<nav style="position:sticky;top:0;z-index:100;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:12px;background:linear-gradient(90deg,rgba(255,140,0,.9),rgba(255,213,74,.9));backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.3);">
+<a href="index.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Home</a>
+<a href="coding.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Coding</a>
+<a href="builder.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Builder</a>
+<a href="coding-kids.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.6);font-weight:bold;">Kids</a>
+<a href="login.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Login</a>
+</nav>
+
+<section class="hero">
+<h1>🐢 Coding for Kids</h1>
+<p>Fun, simple coding activities for young learners — control a turtle with easy commands!</p>
+<div class="cta">
+<a href="coding-kids-editor.html" class="btn">Start Playing →</a>
+<a href="login.html" class="btn btn-secondary">Login</a>
+<a href="signup.html" class="btn btn-secondary">Sign Up</a>
+</div>
+</section>
+
+<section class="features">
+<div class="feature"><div class="icon">🐢</div><h3>Turtle Graphics</h3><p>Control a turtle on a canvas and watch it draw shapes as it moves.</p></div>
+<div class="feature"><div class="icon">🎨</div><h3>Colorful Commands</h3><p>Click colorful buttons to add movement, turning, and color commands.</p></div>
+<div class="feature"><div class="icon">▶️</div><h3>Watch It Run</h3><p>Press Run and see your turtle execute each command step by step.</p></div>
+<div class="feature"><div class="icon">🌟</div><h3>Easy & Fun</h3><p>No typing needed — just click buttons and see instant results!</p></div>
+</section>
+</body>
+</html>

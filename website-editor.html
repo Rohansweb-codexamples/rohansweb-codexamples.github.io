@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Website Editor - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.editor-main { display:flex; flex-direction:column; min-height:calc(100vh - 60px); }
+@media(min-width:768px) { .editor-main { flex-direction:row; } }
+.page-list { flex:0 0 220px; padding:16px; overflow-y:auto; }
+.page-list h3 { color:#ff8c00; margin-bottom:10px; font-size:1rem; }
+.page-list .page-item { padding:10px 14px; border-radius:10px; cursor:pointer; margin-bottom:4px; color:#4a3206; font-size:.85rem; transition:.2s; }
+.page-list .page-item:hover { background:rgba(255,140,0,.1); }
+.page-list .page-item.active { background:rgba(255,140,0,.2); font-weight:bold; }
+.editor-panel { flex:1; display:flex; flex-direction:column; padding:16px; }
+.editor-panel .editor-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.editor-panel .editor-header span { font-weight:bold; color:#4a3206; }
+.editor-panel textarea { flex:1; width:100%; font-family:'Courier New',monospace; font-size:13px; padding:16px; border:2px solid rgba(255,140,0,.2); border-radius:12px; resize:none; outline:none; background:#fff; color:#333; }
+.editor-panel .actions { display:flex; gap:8px; margin-top:12px; }
+.empty { display:flex; align-items:center; justify-content:center; color:#7a5c1a; flex:1; }
+</style>
+</head>
+<body>
+<div class="app-bar">
+  <h1><a href="admin.html">← Admin</a> · Website Editor</h1>
+  <div class="user-info" id="userInfo"></div>
+</div>
+
+<div class="editor-main">
+  <div class="page-list">
+    <h3>Pages</h3>
+    <div id="pageList"></div>
+  </div>
+  <div class="editor-panel">
+    <div id="noSelection" class="empty">Select a page to edit</div>
+    <div id="editorArea" style="display:none; flex:1; display:none; flex-direction:column;">
+      <div class="editor-header">
+        <span id="fileName"></span>
+      </div>
+      <textarea id="pageContent" spellcheck="false"></textarea>
+      <div class="actions">
+        <button class="btn" onclick="savePage()">Save Changes</button>
+        <button class="btn btn-secondary" onclick="reloadPreview()">Preview</button>
+        <span id="saveMsg" style="font-size:.85rem;color:#7a5c1a;align-self:center;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+if (!API.requireAuth()) throw new Error('redirect');
+const user = API.getUser();
+if (!API.requireRole('super_admin')) throw new Error('redirect');
+
+document.getElementById('userInfo').innerHTML =
+  `<span class="role-badge">super admin</span>
+   <button class="logout-btn" onclick="API.logout()">Logout</button>`;
+
+let currentPage = null;
+
+async function loadPages() {
+  try {
+    const pages = await API.call('/api/superadmin/pages');
+    document.getElementById('pageList').innerHTML = pages.map(name =>
+      `<div class="page-item" onclick="loadPage('${name}')">${name}</div>`
+    ).join('');
+  } catch (err) {
+    document.getElementById('pageList').innerHTML = `<p style="color:#c0392b;">${err.message}</p>`;
+  }
+}
+
+async function loadPage(name) {
+  try {
+    const data = await API.call(`/api/superadmin/page?name=${encodeURIComponent(name)}`);
+    currentPage = name;
+    document.getElementById('fileName').textContent = name;
+    document.getElementById('pageContent').value = data.content;
+    document.getElementById('noSelection').style.display = 'none';
+    document.getElementById('editorArea').style.display = 'flex';
+    document.querySelectorAll('.page-item').forEach(el => {
+      el.classList.toggle('active', el.textContent === name);
+    });
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function savePage() {
+  if (!currentPage) return;
+  try {
+    await API.call('/api/superadmin/page', { method: 'PUT', body: {
+      name: currentPage, content: document.getElementById('pageContent').value
+    }});
+    showMsg('Saved!');
+  } catch (err) {
+    showMsg('Error: ' + err.message);
+  }
+}
+
+function showMsg(msg) {
+  const el = document.getElementById('saveMsg');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 3000);
+}
+
+function reloadPreview() {
+  // Open the page in a new tab to preview
+  if (currentPage) window.open(currentPage, '_blank');
+}
+
+loadPages();
+</script>
+</body>
+</html>

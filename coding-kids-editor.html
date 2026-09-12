@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kids Coding Editor - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.kids-layout { display:flex; flex-direction:column; min-height:calc(100vh - 60px); }
+@media(min-width:768px) { .kids-layout { flex-direction:row; } }
+.kids-controls { flex:0 0 320px; padding:16px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; }
+.kids-canvas-wrap { flex:1; padding:16px; display:flex; flex-direction:column; align-items:center; }
+.kids-canvas-wrap canvas { border:4px solid rgba(255,140,0,.3); border-radius:16px; background:#fffdf5; max-width:100%; }
+.kids-title { text-align:center; font-size:1.6rem; color:#ff8c00; font-weight:bold; margin-bottom:8px; }
+.kids-sub { text-align:center; color:#7a5c1a; font-size:.85rem; margin-bottom:8px; }
+.cmd-section { background:rgba(255,255,255,.6); border:2px solid rgba(255,140,0,.15); border-radius:16px; padding:14px; }
+.cmd-section h3 { color:#ff8c00; font-size:1rem; margin-bottom:10px; }
+.cmd-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+.cmd-btn { padding:12px 16px; border:none; border-radius:14px; font-weight:bold; font-size:.9rem; cursor:pointer; transition:.2s; color:#fff; }
+.cmd-btn:hover { transform:scale(1.05); } .cmd-btn:active { transform:scale(.95); }
+.cmd-btn.forward { background:linear-gradient(135deg,#3498db,#5dade2); }
+.cmd-btn.back { background:linear-gradient(135deg,#9b59b6,#bb8fce); }
+.cmd-btn.left { background:linear-gradient(135deg,#2ecc71,#58d68d); }
+.cmd-btn.right { background:linear-gradient(135deg,#e67e22,#f0b27a); }
+.cmd-btn.pen { background:linear-gradient(135deg,#95a5a6,#bdc3c7); }
+.cmd-btn input { width:50px; padding:2px 4px; border:none; border-radius:6px; font-size:.8rem; text-align:center; }
+.program-list { list-style:none; max-height:250px; overflow-y:auto; }
+.program-list li { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(255,255,255,.6); border-radius:10px; margin-bottom:4px; font-size:.9rem; color:#4a3206; }
+.program-list li .cmd-text { font-family:'Courier New',monospace; }
+.program-list li button { background:rgba(231,76,60,.15); border:none; border-radius:6px; cursor:pointer; color:#c0392b; padding:2px 8px; font-size:.8rem; }
+.run-controls { display:flex; gap:8px; }
+.run-controls .btn { flex:1; text-align:center; }
+.color-palette { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.color-dot { width:28px; height:28px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:.2s; }
+.color-dot.selected { border-color:#4a3206; transform:scale(1.15); }
+.turtle-info { margin-top:8px; font-size:.8rem; color:#7a5c1a; }
+</style>
+</head>
+<body>
+<div class="app-bar">
+  <h1><a href="coding-kids.html">← Kids</a> · 🐢 Editor</h1>
+  <div class="user-info" id="userInfo"></div>
+</div>
+
+<div id="notAvailable" class="not-available" style="display:none;">
+  <h2>🔒 Product Not Available</h2>
+  <p>Coding for Kids has not been enabled for your account. Please contact your admin.</p>
+  <a href="dashboard.html" class="btn">Back to Dashboard</a>
+</div>
+
+<div id="content" class="kids-layout" style="display:none;">
+  <div class="kids-controls">
+    <div class="kids-title">🐢 Turtle Coding</div>
+    <div class="kids-sub">Click buttons to add commands, then press Run!</div>
+    <div class="cmd-section">
+      <h3>Movement</h3>
+      <div class="cmd-buttons">
+        <button class="cmd-btn forward" onclick="addCmd('forward')">⬆ Forward <input type="number" id="fwd-amount" value="50" min="1" max="300" onclick="event.stopPropagation()"></button>
+        <button class="cmd-btn back" onclick="addCmd('back')">⬇ Back <input type="number" id="back-amount" value="50" min="1" max="300" onclick="event.stopPropagation()"></button>
+        <button class="cmd-btn left" onclick="addCmd('left')">↺ Left <input type="number" id="left-amount" value="90" min="1" max="360" onclick="event.stopPropagation()"></button>
+        <button class="cmd-btn right" onclick="addCmd('right')">↻ Right <input type="number" id="right-amount" value="90" min="1" max="360" onclick="event.stopPropagation()"></button>
+      </div>
+    </div>
+    <div class="cmd-section">
+      <h3>Pen & Color</h3>
+      <div class="cmd-buttons">
+        <button class="cmd-btn pen" onclick="addCmd('penup')">✏️ Pen Up</button>
+        <button class="cmd-btn pen" onclick="addCmd('pendown')">✏️ Pen Down</button>
+      </div>
+      <div class="color-palette" id="colorPalette"></div>
+    </div>
+    <div class="cmd-section">
+      <h3>Your Program</h3>
+      <ul class="program-list" id="programList"></ul>
+      <div class="run-controls">
+        <button class="btn" onclick="runProgram()">▶ Run</button>
+        <button class="btn btn-secondary" onclick="clearProgram()">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="kids-canvas-wrap">
+    <canvas id="turtleCanvas" width="400" height="400"></canvas>
+    <div class="turtle-info" id="turtleInfo">🐢 Ready to code!</div>
+  </div>
+</div>
+
+<script>
+if (!API.requireAuth()) throw new Error('redirect');
+const user = API.getUser();
+document.getElementById('userInfo').innerHTML = `<span class="role-badge">${user.role.replace('_',' ')}</span><button class="logout-btn" onclick="API.logout()">Logout</button>`;
+
+API.checkProduct('coding-kids').then(enabled => {
+  if (enabled) { document.getElementById('content').style.display = 'flex'; initTurtle(); }
+  else { document.getElementById('notAvailable').style.display = 'block'; }
+});
+
+const colors = ['#ff8c00','#e74c3c','#3498db','#2ecc71','#9b59b6','#f1c40f','#1abc9c','#e67e22'];
+let selectedColor = '#ff8c00';
+function initColorPalette() {
+  document.getElementById('colorPalette').innerHTML = colors.map(c =>
+    `<div class="color-dot ${c===selectedColor?'selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`
+  ).join('');
+}
+function selectColor(c) { selectedColor = c; initColorPalette(); addCmd('color', c); }
+
+let program = [];
+function addCmd(type, value) {
+  if (type === 'forward') value = parseInt(document.getElementById('fwd-amount').value) || 50;
+  else if (type === 'back') value = parseInt(document.getElementById('back-amount').value) || 50;
+  else if (type === 'left') value = parseInt(document.getElementById('left-amount').value) || 90;
+  else if (type === 'right') value = parseInt(document.getElementById('right-amount').value) || 90;
+  program.push({ type, value }); renderProgram();
+}
+function removeCmd(i) { program.splice(i, 1); renderProgram(); }
+function clearProgram() { program = []; renderProgram(); resetTurtle(); }
+function renderProgram() {
+  const list = document.getElementById('programList');
+  if (!program.length) { list.innerHTML = '<li style="color:#7a5c1a;justify-content:center;">No commands yet. Add some above!</li>'; return; }
+  list.innerHTML = program.map((cmd, i) => {
+    let text = cmd.type; if (cmd.value !== null) text += ` (${cmd.value})`;
+    return `<li><span class="cmd-text">${i+1}. ${text}</span><button onclick="removeCmd(${i})">✕</button></li>`;
+  }).join('');
+}
+
+let turtle = {}, ctx;
+function initTurtle() { initColorPalette(); resetTurtle(); }
+function resetTurtle() {
+  const canvas = document.getElementById('turtleCanvas');
+  ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  turtle = { x: canvas.width/2, y: canvas.height/2, angle: -90, penDown: true, color: '#ff8c00' };
+  drawTurtle();
+  document.getElementById('turtleInfo').textContent = '🐢 Ready to code!';
+}
+function drawTurtle() {
+  ctx.save(); ctx.translate(turtle.x, turtle.y); ctx.rotate(turtle.angle * Math.PI / 180);
+  ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('🐢', 0, 0); ctx.restore();
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function runProgram() {
+  resetTurtle();
+  document.getElementById('turtleInfo').textContent = '🐢 Running...';
+  ctx.fillStyle = '#fffdf5'; ctx.fillRect(0, 0, 400, 400);
+  for (let i = 0; i < program.length; i++) {
+    const cmd = program[i];
+    document.getElementById('turtleInfo').textContent = `🐢 Step ${i+1}/${program.length}: ${cmd.type}`;
+    if (cmd.type === 'color') turtle.color = cmd.value;
+    else if (cmd.type === 'penup') turtle.penDown = false;
+    else if (cmd.type === 'pendown') turtle.penDown = true;
+    else if (cmd.type === 'forward' || cmd.type === 'back') {
+      const dist = cmd.type === 'forward' ? cmd.value : -cmd.value;
+      const rad = turtle.angle * Math.PI / 180;
+      const nx = turtle.x + Math.cos(rad) * dist, ny = turtle.y + Math.sin(rad) * dist;
+      if (turtle.penDown) { ctx.strokeStyle = turtle.color; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(turtle.x, turtle.y); ctx.lineTo(nx, ny); ctx.stroke(); }
+      turtle.x = nx; turtle.y = ny;
+    } else if (cmd.type === 'left') turtle.angle -= cmd.value;
+    else if (cmd.type === 'right') turtle.angle += cmd.value;
+    drawTurtle();
+    await sleep(300);
+  }
+  document.getElementById('turtleInfo').textContent = '✅ Done! Press Run to play again.';
+}
+</script>
+</body>
+</html>

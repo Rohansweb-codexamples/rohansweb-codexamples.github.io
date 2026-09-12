@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.welcome { text-align:center; margin-bottom:30px; }
+.welcome h2 { font-size:1.8rem; color:#ff8c00; margin-bottom:8px; }
+.welcome p { color:#7a5c1a; }
+.admin-link { margin:20px 0; text-align:center; }
+.product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; }
+.empty-state { text-align:center; padding:60px 20px; color:#7a5c1a; }
+.card .badge-access { float:right; font-size:.75rem; color:#27ae60; font-weight:bold; }
+.card .badge-locked { float:right; font-size:.75rem; color:#999; }
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<div class="app-bar">
+  <h1><a href="index.html">Rohans Web</a></h1>
+  <div class="user-info" id="userInfo"></div>
+</div>
+
+<div class="content">
+  <div class="welcome">
+    <h2 id="welcomeTitle">Dashboard</h2>
+    <p id="welcomeSub"></p>
+  </div>
+  <div class="admin-link" id="adminLink" style="display:none;">
+    <a href="admin.html" class="btn btn-secondary">⚙ Admin Panel</a>
+  </div>
+  <div id="productGrid" class="product-grid"></div>
+  <div id="emptyState" class="empty-state" style="display:none;">
+    <p>No products are currently enabled for you. Please contact your admin.</p>
+  </div>
+</div>
+
+<script>
+if (!API.requireAuth()) throw new Error('redirect');
+
+const user = API.getUser();
+document.getElementById('userInfo').innerHTML =
+  `<span class="role-badge">${user.role.replace('_',' ')}</span>
+   <button class="logout-btn" onclick="API.logout()">Logout</button>`;
+
+document.getElementById('welcomeTitle').textContent = `Welcome, ${user.email || user.username || 'User'}`;
+document.getElementById('welcomeSub').textContent = `You are logged in as ${user.role.replace('_',' ')}`;
+
+if (user.role === 'admin' || user.role === 'super_admin') {
+  document.getElementById('adminLink').style.display = 'block';
+}
+
+const editorPages = { 'coding': 'coding-editor.html', 'builder': 'builder-editor.html', 'coding-kids': 'coding-kids-editor.html' };
+
+API.call('/api/products').then(products => {
+  const grid = document.getElementById('productGrid');
+  const accessible = products.filter(p => p.hasAccess);
+  if (accessible.length === 0) {
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
+  grid.innerHTML = accessible.map(p => {
+    const href = editorPages[p.slug] || '#';
+    return `<a href="${href}" class="card">
+      <span class="badge-access">✓ Available</span>
+      <h2>${p.name}</h2>
+      <p>${p.description}</p>
+    </a>`;
+  }).join('');
+}).catch(() => { document.getElementById('emptyState').style.display = 'block'; });
+</script>
+</body>
+</html>

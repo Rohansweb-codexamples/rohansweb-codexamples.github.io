@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coding Site - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.hero { text-align:center; padding:80px 20px 40px; position:relative; }
+.hero h1 { font-size:3rem; background:linear-gradient(90deg,#ff8c00,#ffd54a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
+.hero p { color:#7a5c1a; font-size:1.2rem; max-width:500px; margin:0 auto 30px; }
+.hero .cta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.features { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; max-width:900px; margin:40px auto; padding:0 20px; }
+.feature { background:rgba(255,255,255,.5); backdrop-filter:blur(15px); border:1px solid rgba(255,140,0,.2); border-radius:20px; padding:24px; text-align:center; }
+.feature .icon { font-size:2.5rem; margin-bottom:10px; }
+.feature h3 { color:#ff8c00; margin-bottom:6px; }
+.feature p { color:#7a5c1a; font-size:.9rem; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<nav style="position:sticky;top:0;z-index:100;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:12px;background:linear-gradient(90deg,rgba(255,140,0,.9),rgba(255,213,74,.9));backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.3);">
+<a href="index.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Home</a>
+<a href="coding.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.6);font-weight:bold;">Coding</a>
+<a href="builder.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Builder</a>
+<a href="coding-kids.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Kids</a>
+<a href="login.html" style="color:#4a2000;text-decoration:none;padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.35);font-weight:bold;">Login</a>
+</nav>
+
+<section class="hero">
+<h1>💻 Coding Site</h1>
+<p>Write and run HTML, CSS, and JavaScript code directly in your browser with live preview.</p>
+<div class="cta">
+<a href="coding-editor.html" class="btn">Start Coding →</a>
+<a href="login.html" class="btn btn-secondary">Login</a>
+<a href="signup.html" class="btn btn-secondary">Sign Up</a>
+</div>
+</section>
+
+<section class="features">
+<div class="feature"><div class="icon">📝</div><h3>HTML / CSS / JS</h3><p>Three-tab editor for writing HTML, CSS, and JavaScript with syntax-friendly textareas.</p></div>
+<div class="feature"><div class="icon">⚡</div><h3>Live Preview</h3><p>See your code rendered instantly with auto-run or manual run button.</p></div>
+<div class="feature"><div class="icon">💾</div><h3>Save Your Work</h3><p>Your code is saved in your browser so you can come back to it anytime.</p></div>
+<div class="feature"><div class="icon">📱</div><h3>Works Everywhere</h3><p>Responsive layout works on desktop, tablet, and mobile devices.</p></div>
+</section>
+</body>
+</html>

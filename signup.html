@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign Up - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.auth-card { background:rgba(255,255,255,.6); backdrop-filter:blur(20px); border:1px solid rgba(255,140,0,.2); border-radius:24px; padding:40px; max-width:400px; width:100%; box-shadow:0 8px 40px rgba(255,140,0,.15); }
+.auth-card h1 { font-size:2rem; background:linear-gradient(90deg,#ff8c00,#ffd54a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; text-align:center; }
+.auth-card .sub { text-align:center; color:#7a5c1a; margin-bottom:24px; font-size:.9rem; }
+.auth-btn { width:100%; padding:14px; background:linear-gradient(135deg,#ff8c00,#ffd54a); color:#4a2000; border:none; border-radius:12px; font-size:1.1rem; font-weight:bold; cursor:pointer; transition:.2s; box-shadow:0 4px 20px rgba(255,140,0,.25); }
+.auth-btn:hover { transform:translateY(-2px); box-shadow:0 6px 30px rgba(255,140,0,.4); }
+.auth-link { text-align:center; margin-top:16px; font-size:.9rem; color:#7a5c1a; }
+.auth-link a { color:#ff8c00; font-weight:bold; text-decoration:none; }
+.back-link { text-align:center; margin-top:12px; }
+.back-link a { color:#7a5c1a; text-decoration:none; font-size:.85rem; }
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1>Sign Up</h1>
+    <p class="sub">Create your Rohans Web account</p>
+    <div class="error-msg" id="error"></div>
+    <form id="signupForm">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Enter your email" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Choose a password" required>
+      </div>
+      <button type="submit" class="auth-btn">Sign Up</button>
+    </form>
+    <div class="auth-link">Already have an account? <a href="login.html">Login</a></div>
+    <div class="back-link"><a href="index.html">← Back to home</a></div>
+  </div>
+</div>
+
+<script>
+if (API.isLoggedIn()) window.location.href = 'dashboard.html';
+
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errorEl = document.getElementById('error');
+  errorEl.classList.remove('show');
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  try {
+    await API.signup(email, password);
+    window.location.href = 'dashboard.html';
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.classList.add('show');
+  }
+});
+</script>
+</body>
+</html>

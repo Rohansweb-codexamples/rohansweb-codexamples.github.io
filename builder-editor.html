@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Website Builder Editor - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.builder-layout { display:flex; flex-direction:column; min-height:calc(100vh - 60px); }
+.builder-toolbar { display:flex; gap:8px; padding:12px; flex-wrap:wrap; align-items:center; }
+.builder-toolbar .label { font-weight:bold; color:#4a3206; font-size:.85rem; margin-right:4px; }
+.tool-btn { padding:8px 14px; border:2px solid rgba(255,140,0,.2); border-radius:10px; background:rgba(255,255,255,.7); color:#4a3206; cursor:pointer; font-weight:bold; font-size:.85rem; transition:.2s; }
+.tool-btn:hover { border-color:#ff8c00; background:#fff; }
+.builder-main { display:flex; flex-direction:column; flex:1; gap:12px; padding:0 12px 12px; }
+@media(min-width:768px) { .builder-main { flex-direction:row; } }
+.block-list { flex:0 0 280px; display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:60vh; }
+@media(min-width:768px) { .block-list { max-height:none; } }
+.block-item { background:rgba(255,255,255,.7); border:1px solid rgba(255,140,0,.2); border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.block-item .block-content { flex:1; }
+.block-item .block-type { font-size:.7rem; color:#ff8c00; font-weight:bold; text-transform:uppercase; }
+.block-item input, .block-item textarea { width:100%; margin-top:4px; padding:6px 8px; border:1px solid rgba(255,140,0,.2); border-radius:6px; font-size:.85rem; }
+.block-item .block-controls { display:flex; flex-direction:column; gap:4px; }
+.block-item .block-controls button { padding:4px 8px; font-size:.7rem; border:1px solid rgba(255,140,0,.2); border-radius:6px; background:#fff; cursor:pointer; color:#4a3206; }
+.preview-panel { flex:1; background:#fff; border:2px solid rgba(255,140,0,.2); border-radius:12px; overflow:hidden; min-height:300px; }
+.preview-panel iframe { width:100%; height:100%; min-height:300px; border:none; }
+.export-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:200; padding:20px; }
+.export-modal.show { display:flex; }
+.export-modal .modal-content { background:#fff; border-radius:20px; padding:24px; max-width:600px; width:100%; max-height:80vh; overflow:auto; }
+.export-modal h2 { color:#ff8c00; margin-bottom:12px; }
+.export-modal textarea { width:100%; height:300px; font-family:'Courier New',monospace; font-size:12px; padding:12px; border:2px solid rgba(255,140,0,.2); border-radius:10px; }
+.export-modal .modal-actions { display:flex; gap:8px; margin-top:12px; }
+.empty-builder { text-align:center; padding:40px; color:#7a5c1a; }
+</style>
+</head>
+<body>
+<div class="app-bar">
+  <h1><a href="builder.html">← Builder</a> · Editor</h1>
+  <div class="user-info" id="userInfo"></div>
+</div>
+
+<div id="notAvailable" class="not-available" style="display:none;">
+  <h2>🔒 Product Not Available</h2>
+  <p>The Website Builder has not been enabled for your account. Please contact your admin.</p>
+  <a href="dashboard.html" class="btn">Back to Dashboard</a>
+</div>
+
+<div id="content" class="builder-layout" style="display:none;">
+  <div class="builder-toolbar">
+    <span class="label">Add:</span>
+    <button class="tool-btn" onclick="addBlock('heading')">Heading</button>
+    <button class="tool-btn" onclick="addBlock('text')">Text</button>
+    <button class="tool-btn" onclick="addBlock('image')">Image</button>
+    <button class="tool-btn" onclick="addBlock('button')">Button</button>
+    <button class="tool-btn" onclick="addBlock('divider')">Divider</button>
+    <span style="flex:1;"></span>
+    <button class="btn btn-secondary" onclick="exportHTML()">Export HTML</button>
+    <button class="btn btn-secondary" onclick="saveBlocks()">Save</button>
+    <span id="saveStatus" style="font-size:.8rem;color:#7a5c1a;"></span>
+  </div>
+  <div class="builder-main">
+    <div class="block-list" id="blockList"><div class="empty-builder">Click "Add" buttons above to start building your page.</div></div>
+    <div class="preview-panel"><iframe id="preview" sandbox="allow-scripts"></iframe></div>
+  </div>
+</div>
+
+<div class="export-modal" id="exportModal">
+  <div class="modal-content">
+    <h2>Export HTML</h2>
+    <textarea id="exportCode" readonly></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="copyExport()">Copy to Clipboard</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('exportModal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+if (!API.requireAuth()) throw new Error('redirect');
+const user = API.getUser();
+document.getElementById('userInfo').innerHTML = `<span class="role-badge">${user.role.replace('_',' ')}</span><button class="logout-btn" onclick="API.logout()">Logout</button>`;
+
+API.checkProduct('builder').then(enabled => {
+  if (enabled) { document.getElementById('content').style.display = 'flex'; loadBlocks(); }
+  else { document.getElementById('notAvailable').style.display = 'block'; }
+});
+
+let blocks = [];
+function addBlock(type) {
+  const b = { id: Date.now(), type };
+  if (type === 'heading') b.content = 'My Heading';
+  else if (type === 'text') b.content = 'Some text goes here...';
+  else if (type === 'image') b.content = 'https://via.placeholder.com/400x200';
+  else if (type === 'button') { b.content = 'Click Me'; b.link = '#'; }
+  blocks.push(b); renderBlocks();
+}
+function removeBlock(id) { blocks = blocks.filter(b => b.id !== id); renderBlocks(); }
+function moveBlock(id, dir) { const i = blocks.findIndex(b => b.id === id); const j = i + dir; if (j < 0 || j >= blocks.length) return; [blocks[i], blocks[j]] = [blocks[j], blocks[i]]; renderBlocks(); }
+function updateBlock(id, field, value) { const b = blocks.find(b => b.id === id); if (b) { b[field] = value; updatePreview(); } }
+
+function renderBlocks() {
+  const list = document.getElementById('blockList');
+  if (!blocks.length) { list.innerHTML = '<div class="empty-builder">Click "Add" buttons above to start building your page.</div>'; updatePreview(); return; }
+  list.innerHTML = blocks.map((b) => {
+    let content = '';
+    if (b.type === 'heading') content = `<input type="text" value="${esc(b.content)}" oninput="updateBlock(${b.id},'content',this.value)" placeholder="Heading text">`;
+    else if (b.type === 'text') content = `<textarea oninput="updateBlock(${b.id},'content',this.value)" placeholder="Text content">${esc(b.content)}</textarea>`;
+    else if (b.type === 'image') content = `<input type="text" value="${esc(b.content)}" oninput="updateBlock(${b.id},'content',this.value)" placeholder="Image URL">`;
+    else if (b.type === 'button') content = `<input type="text" value="${esc(b.content)}" oninput="updateBlock(${b.id},'content',this.value)" placeholder="Button text"><input type="text" value="${esc(b.link||'')}" oninput="updateBlock(${b.id},'link',this.value)" placeholder="Link URL">`;
+    return `<div class="block-item"><div class="block-content"><span class="block-type">${b.type}</span>${content}</div><div class="block-controls"><button onclick="moveBlock(${b.id},-1)">↑</button><button onclick="moveBlock(${b.id},1)">↓</button><button onclick="removeBlock(${b.id})" style="color:#e74c3c;">✕</button></div></div>`;
+  }).join('');
+  updatePreview();
+}
+
+function generateHTML() {
+  let body = '';
+  blocks.forEach(b => {
+    if (b.type === 'heading') body += `<h1>${esc(b.content)}</h1>\n`;
+    else if (b.type === 'text') body += `<p>${esc(b.content)}</p>\n`;
+    else if (b.type === 'image') body += `<img src="${esc(b.content)}" alt="" style="max-width:100%;">\n`;
+    else if (b.type === 'button') body += `<a href="${esc(b.link||'#')}" style="display:inline-block;padding:12px 24px;background:#ff8c00;color:#fff;text-decoration:none;border-radius:8px;">${esc(b.content)}</a>\n`;
+    else if (b.type === 'divider') body += `<hr>\n`;
+  });
+  return `<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;}img{max-width:100%;}</style>\n</head>\n<body>\n${body}</body>\n</html>`;
+}
+
+function updatePreview() { document.getElementById('preview').srcdoc = generateHTML(); }
+function exportHTML() { document.getElementById('exportCode').value = generateHTML(); document.getElementById('exportModal').classList.add('show'); }
+function copyExport() { const ta = document.getElementById('exportCode'); ta.select(); document.execCommand('copy'); showStatus('Copied!'); }
+function saveBlocks() { localStorage.setItem('rw_builder', JSON.stringify(blocks)); showStatus('Saved!'); }
+function loadBlocks() { const s = localStorage.getItem('rw_builder'); if (s) { try { blocks = JSON.parse(s); } catch {} } renderBlocks(); }
+function showStatus(msg) { const el = document.getElementById('saveStatus'); el.textContent = msg; setTimeout(() => el.textContent = '', 2000); }
+function esc(s) { return String(s||'').replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"'); }
+</script>
+</body>
+</html>
