@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Documents - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.doc-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+.doc-card h3 { color:#ff8c00; margin-bottom:6px; font-size:1.1rem; }
+.doc-meta { font-size:.8rem; color:#7a5c1a; margin-bottom:8px; }
+.doc-preview { font-size:.85rem; color:#7a5c1a; line-height:1.5; max-height:60px; overflow:hidden; }
+.doc-actions { margin-top:12px; display:flex; gap:8px; }
+.doc-actions button { padding:6px 14px; font-size:.8rem; }
+.doc-type-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:.7rem; font-weight:bold; background:rgba(255,140,0,.15); color:#ff8c00; text-transform:uppercase; }
+.editor-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:200; padding:20px; }
+.editor-modal.show { display:flex; }
+.editor-content { background:#fff; border-radius:20px; padding:24px; max-width:700px; width:100%; max-height:85vh; overflow:auto; }
+.editor-content h3 { color:#ff8c00; margin-bottom:16px; }
+.editor-content textarea { width:100%; min-height:300px; padding:12px; border:2px solid rgba(255,140,0,.2); border-radius:10px; font-family:'Courier New',monospace; font-size:14px; resize:vertical; outline:none; }
+.editor-content textarea:focus { border-color:#ff8c00; }
+.editor-actions { display:flex; gap:8px; margin-top:16px; }
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<div class="app-bar">
+  <h1><a href="dashboard.html">← Dashboard</a> · Documents</h1>
+  <div class="user-info" id="userInfo"></div>
+</div>
+
+<div class="content">
+  <div class="doc-toolbar">
+    <h2 style="color:#ff8c00;">My Documents</h2>
+    <button class="btn" onclick="newDocument()">+ New Document</button>
+  </div>
+
+  <div id="docList" class="grid"></div>
+  <div id="emptyState" style="display:none;text-align:center;padding:60px 20px;color:#7a5c1a;">
+    <p>No documents yet. Click "New Document" to create one.</p>
+  </div>
+
+  <div class="editor-modal" id="editorModal">
+    <div class="editor-content">
+      <h3 id="editorTitle">New Document</h3>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="docTitle" placeholder="Document title">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="docType">
+          <option value="note">Note</option>
+          <option value="html">HTML</option>
+          <option value="css">CSS</option>
+          <option value="js">JavaScript</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Content</label>
+        <textarea id="docContent" placeholder="Write your content here..."></textarea>
+      </div>
+      <div class="editor-actions">
+        <button class="btn" onclick="saveDocument()">Save</button>
+        <button class="btn btn-secondary" onclick="closeEditor()">Cancel</button>
+        <button class="btn btn-danger" id="deleteBtn" onclick="deleteDocument()" style="display:none;">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(async function() {
+  if (!API.isLoggedIn()) {
+    sessionStorage.setItem('rw_redirect', window.location.pathname);
+    window.location.href = 'login.html';
+    return;
+  }
+  var user = API.getUser();
+  document.getElementById('userInfo').innerHTML = '<span class="role-badge">' + user.role.replace('_',' ') + '<\/span><button class="logout-btn" onclick="API.logout()">Logout<\/button>';
+  loadDocuments();
+})();
+
+var editingId = null;
+
+async function loadDocuments() {
+  try {
+    var docs = await API.getDocuments();
+    var list = document.getElementById('docList');
+    var empty = document.getElementById('emptyState');
+    if (docs.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    list.innerHTML = docs.map(function(doc) {
+      var preview = (doc.content || '').substring(0, 100);
+      return '<div class="card doc-card">' +
+        '<span class="doc-type-badge">' + (doc.type || 'note') + '<\/span>' +
+        '<h3>' + escapeHtml(doc.title) + '<\/h3>' +
+        '<div class="doc-meta">Updated ' + formatDate(doc.updatedAt) + '<\/div>' +
+        '<div class="doc-preview">' + escapeHtml(preview) + '<\/div>' +
+        '<div class="doc-actions"><button class="btn btn-secondary" onclick="editDocument(' + doc.id + ')">Edit<\/button><\/div>' +
+      '<\/div>';
+    }).join('');
+  } catch (err) {
+    document.getElementById('emptyState').style.display = 'block';
+  }
+}
+
+function newDocument() {
+  editingId = null;
+  document.getElementById('editorTitle').textContent = 'New Document';
+  document.getElementById('docTitle').value = '';
+  document.getElementById('docType').value = 'note';
+  document.getElementById('docContent').value = '';
+  document.getElementById('deleteBtn').style.display = 'none';
+  document.getElementById('editorModal').classList.add('show');
+}
+
+async function editDocument(id) {
+  try {
+    var doc = await API.getDocument(id);
+    editingId = doc.id;
+    document.getElementById('editorTitle').textContent = 'Edit Document';
+    document.getElementById('docTitle').value = doc.title;
+    document.getElementById('docType').value = doc.type || 'note';
+    document.getElementById('docContent').value = doc.content || '';
+    document.getElementById('deleteBtn').style.display = 'inline-block';
+    document.getElementById('editorModal').classList.add('show');
+  } catch (err) {
+    alert('Failed to load document: ' + err.message);
+  }
+}
+
+async function saveDocument() {
+  var title = document.getElementById('docTitle').value.trim();
+  var type = document.getElementById('docType').value;
+  var content = document.getElementById('docContent').value;
+  if (!title) { alert('Please enter a title'); return; }
+  try {
+    if (editingId) {
+      await API.updateDocument(editingId, title, content);
+    } else {
+      await API.createDocument(title, content, type);
+    }
+    closeEditor();
+    loadDocuments();
+  } catch (err) {
+    alert('Failed to save: ' + err.message);
+  }
+}
+
+async function deleteDocument() {
+  if (!editingId || !confirm('Delete this document?')) return;
+  try {
+    await API.deleteDocument(editingId);
+    closeEditor();
+    loadDocuments();
+  } catch (err) {
+    alert('Failed to delete: ' + err.message);
+  }
+}
+
+function closeEditor() {
+  document.getElementById('editorModal').classList.remove('show');
+  editingId = null;
+}
+
+function escapeHtml(s) {
+  var map = { '&': '&'+'amp;', '<': '&'+'lt;', '>': '&'+'gt;', '"': '&'+'quot;' };
+  return String(s || '').replace(/[&<>"]/g, function(c) { return map[c]; });
+}
+
+function formatDate(d) {
+  var date = new Date(d);
+  return date.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+</script>
+</body>
+</html>

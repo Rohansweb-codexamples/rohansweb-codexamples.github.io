@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Settings - Rohans Web</title>
+<link rel="stylesheet" href="css/app.css">
+<script src="js/api.js"></script>
+<style>
+.profile-display { width:120px; height:120px; border-radius:50%; overflow:hidden; margin:0 auto 16px; border:4px solid rgba(255,140,0,.3); display:flex; align-items:center; justify-content:center; font-size:3rem; background:rgba(255,140,0,.1); }
+.profile-display img { width:100%; height:100%; object-fit:cover; }
+.avatar-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(70px,1fr)); gap:12px; max-width:400px; margin:0 auto; }
+.avatar-option { width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; cursor:pointer; border:3px solid transparent; background:rgba(255,140,0,.1); transition:.2s; }
+.avatar-option:hover { transform:scale(1.1); border-color:rgba(255,140,0,.4); }
+.avatar-option.selected { border-color:#ff8c00; background:rgba(255,140,0,.2); transform:scale(1.1); }
+.settings-card { background:rgba(255,255,255,.5); backdrop-filter:blur(15px); border:1px solid rgba(255,140,0,.2); border-radius:20px; padding:24px; margin-bottom:20px; }
+.settings-card h3 { color:#ff8c00; margin-bottom:16px; }
+</style>
+</head>
+<body>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<div class="app-bar">
+  <h1><a href="dashboard.html">← Dashboard</a> · Settings</h1>
+  <div class="user-info" id="userInfo"></div>
+</div>
+
+<div class="content">
+  <div class="settings-card">
+    <h3>Profile Picture</h3>
+    <div id="profileDisplay" class="profile-display">👤</div>
+
+    <div id="uploadSection" style="display:none;text-align:center;">
+      <input type="file" id="fileInput" accept="image/*" style="display:none;">
+      <button class="btn" onclick="document.getElementById('fileInput').click()">Choose Image</button>
+      <button class="btn btn-secondary" onclick="removePicture()" id="removeBtn" style="display:none;">Remove</button>
+      <p style="font-size:.8rem;color:#7a5c1a;margin-top:8px;">Max 200x200px. JPG or PNG.</p>
+    </div>
+
+    <div id="avatarSection" style="display:none;">
+      <p style="margin-bottom:12px;font-size:.85rem;color:#7a5c1a;text-align:center;">Choose your avatar:</p>
+      <div class="avatar-grid" id="avatarGrid"></div>
+    </div>
+  </div>
+
+  <div class="settings-card" id="usernameCard" style="display:none;">
+    <h3>Username</h3>
+    <div class="form-group">
+      <input type="text" id="usernameInput" placeholder="Enter a username">
+    </div>
+  </div>
+
+  <button class="btn" onclick="saveProfile()">Save Changes</button>
+  <span id="statusMsg" style="margin-left:12px;color:#27ae60;font-size:.85rem;"></span>
+</div>
+
+<script>
+(async function() {
+  if (!API.isLoggedIn()) {
+    sessionStorage.setItem('rw_redirect', window.location.pathname);
+    window.location.href = 'login.html';
+    return;
+  }
+  var user = API.getUser();
+  document.getElementById('userInfo').innerHTML = '<span class="role-badge">' + user.role.replace('_',' ') + '<\/span><button class="logout-btn" onclick="API.logout()">Logout<\/button>';
+
+  var isStudent = user.role === 'student';
+  var canUpload = user.role === 'admin' || user.role === 'super_admin' || user.role === 'user';
+
+  if (canUpload) {
+    document.getElementById('uploadSection').style.display = 'block';
+    document.getElementById('usernameCard').style.display = 'block';
+    document.getElementById('usernameInput').value = user.username || '';
+    if (user.profilePicture) {
+      document.getElementById('profileDisplay').innerHTML = '<img src="' + user.profilePicture + '">';
+      document.getElementById('removeBtn').style.display = 'inline-block';
+    }
+  } else if (isStudent) {
+    document.getElementById('avatarSection').style.display = 'block';
+    initAvatarGrid();
+    if (user.avatar) {
+      document.getElementById('profileDisplay').textContent = user.avatar;
+      selectedAvatar = user.avatar;
+    }
+  }
+
+  document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+})();
+
+var selectedAvatar = null;
+var newProfilePicture = null;
+var removePictureFlag = false;
+var AVATARS = ['🦊','🐻','🐼','🦁','🐯','🐨','🐸','🦉','🐵','🐧','🐬','🦄'];
+
+function initAvatarGrid() {
+  var user = API.getUser();
+  var grid = document.getElementById('avatarGrid');
+  grid.innerHTML = AVATARS.map(function(emoji) {
+    var selected = (user.avatar === emoji) ? 'selected' : '';
+    return '<div class="avatar-option ' + selected + '" onclick="selectAvatar(\'' + emoji + '\')">' + emoji + '<\/div>';
+  }).join('');
+}
+
+function selectAvatar(emoji) {
+  selectedAvatar = emoji;
+  document.getElementById('profileDisplay').textContent = emoji;
+  document.querySelectorAll('.avatar-option').forEach(function(el) {
+    el.classList.remove('selected');
+    if (el.textContent === emoji) el.classList.add('selected');
+  });
+}
+
+function handleFileSelect(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2000000) { alert('File too large. Max 2MB.'); return; }
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      canvas.width = 200; canvas.height = 200;
+      var ctx = canvas.getContext('2d');
+      var size = Math.min(img.width, img.height);
+      var sx = (img.width - size) / 2;
+      var sy = (img.height - size) / 2;
+      ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+      newProfilePicture = canvas.toDataURL('image/jpeg', 0.8);
+      document.getElementById('profileDisplay').innerHTML = '<img src="' + newProfilePicture + '">';
+      document.getElementById('removeBtn').style.display = 'inline-block';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePicture() {
+  newProfilePicture = null;
+  removePictureFlag = true;
+  document.getElementById('profileDisplay').innerHTML = '👤';
+  document.getElementById('removeBtn').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+}
+
+async function saveProfile() {
+  var user = API.getUser();
+  var data = {};
+  if (user.role !== 'student') {
+    data.username = document.getElementById('usernameInput').value || null;
+    if (removePictureFlag) { data.profilePicture = null; }
+    else if (newProfilePicture) { data.profilePicture = newProfilePicture; }
+  } else {
+    if (selectedAvatar) { data.avatar = selectedAvatar; }
+  }
+  try {
+    await API.updateProfile(data);
+    showStatus('Saved!');
+    removePictureFlag = false;
+    newProfilePicture = null;
+  } catch (err) {
+    showStatus('Error: ' + err.message, true);
+  }
+}
+
+function showStatus(msg, isError) {
+  var el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.style.color = isError ? '#e74c3c' : '#27ae60';
+  setTimeout(function() { el.textContent = ''; }, 3000);
+}
+</script>
+</body>
+</html>

@@ -87,5 +87,34 @@ window.API = {
     } catch (e) {
       return false;
     }
+  },
+
+  async updateProfile(data) {
+    var result = await this.call('/api/me/profile', { method: 'PUT', body: data });
+    if (result.success && result.user) {
+      var current = this.getUser();
+      this.setUser(Object.assign({}, current, result.user));
+    }
+    return result;
+  },
+
+  async getDocuments() {
+    return this.call('/api/documents');
+  },
+
+  async createDocument(title, content, type) {
+    return this.call('/api/documents', { method: 'POST', body: { title: title, content: content, type: type } });
+  },
+
+  async getDocument(id) {
+    return this.call('/api/documents/' + id);
+  },
+
+  async updateDocument(id, title, content) {
+    return this.call('/api/documents/' + id, { method: 'PUT', body: { title: title, content: content } });
+  },
+
+  async deleteDocument(id) {
+    return this.call('/api/documents/' + id, { method: 'DELETE' });
   }
 };

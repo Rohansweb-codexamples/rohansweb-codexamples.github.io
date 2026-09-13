@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'rohans-web-dev-secret-2026';
 const ROOT_DIR = path.join(__dirname, '..');
 
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 initializeDB();
 
 // ── Middleware ──
@@ -48,7 +48,7 @@ app.post('/api/auth/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, user: { id: user.id, email: user.email, username: user.username, role: user.role } });
+  res.json({ token, user: { id: user.id, email: user.email, username: user.username, role: user.role, profilePicture: user.profilePicture || null, avatar: user.avatar || null } });
 });
 
 app.post('/api/auth/signup', (req, res) => {
@@ -67,14 +67,14 @@ app.post('/api/auth/signup', (req, res) => {
   db.users.push(user);
   saveDB(db);
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, user: { id: user.id, email: user.email, username: user.username, role: user.role, class: user.class, products: user.products || [] } });
+  res.json({ token, user: { id: user.id, email: user.email, username: user.username, role: user.role, class: user.class, products: user.products || [], profilePicture: user.profilePicture || null, avatar: user.avatar || null } });
 });
 
 app.get('/api/me', authenticate, (req, res) => {
   const db = getDB();
   const user = db.users.find(u => u.id === req.user.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({ id: user.id, email: user.email, username: user.username, role: user.role, class: user.class, products: user.products });
+  res.json({ id: user.id, email: user.email, username: user.username, role: user.role, class: user.class, products: user.products, profilePicture: user.profilePicture || null, avatar: user.avatar || null });
 });
 
 // ── Super Admin ──
@@ -249,6 +249,86 @@ app.put('/api/superadmin/page', authenticate, requireRole('super_admin'), (req, 
   const filePath = path.join(ROOT_DIR, name);
   fs.writeFileSync(filePath, content);
   res.json({ success: true });
+});
+
+// ── Documents ──
+
+app.get('/api/documents', authenticate, (req, res) => {
+  const db = getDB();
+  const docs = (db.documents || []).filter(d => d.userId === req.user.id);
+  res.json(docs.map(d => ({ id: d.id, title: d.title, type: d.type || 'note', updatedAt: d.updatedAt, createdAt: d.createdAt })));
+});
+
+app.post('/api/documents', authenticate, (req, res) => {
+  const { title, content, type } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title required' });
+  const db = getDB();
+  if (!db.documents) { db.documents = []; }
+  if (!db.nextDocId) { db.nextDocId = 1; }
+  const doc = {
+    id: db.nextDocId++,
+    userId: req.user.id,
+    title,
+    content: content || '',
+    type: type || 'note',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  db.documents.push(doc);
+  saveDB(db);
+  res.json({ success: true, id: doc.id });
+});
+
+app.get('/api/documents/:id', authenticate, (req, res) => {
+  const db = getDB();
+  const doc = (db.documents || []).find(d => d.id === parseInt(req.params.id) && d.userId === req.user.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+  res.json(doc);
+});
+
+app.put('/api/documents/:id', authenticate, (req, res) => {
+  const db = getDB();
+  const doc = (db.documents || []).find(d => d.id === parseInt(req.params.id) && d.userId === req.user.id);
+  if (!doc) return res.status(404).json({ error: 'Document not found' });
+  const { title, content } = req.body;
+  if (title !== undefined) doc.title = title;
+  if (content !== undefined) doc.content = content;
+  doc.updatedAt = new Date().toISOString();
+  saveDB(db);
+  res.json({ success: true });
+});
+
+app.delete('/api/documents/:id', authenticate, (req, res) => {
+  const db = getDB();
+  if (!db.documents) return res.status(404).json({ error: 'Document not found' });
+  const before = db.documents.length;
+  db.documents = db.documents.filter(d => !(d.id === parseInt(req.params.id) && d.userId === req.user.id));
+  if (db.documents.length === before) return res.status(404).json({ error: 'Document not found' });
+  saveDB(db);
+  res.json({ success: true });
+});
+
+// ── Profile ──
+
+app.put('/api/me/profile', authenticate, (req, res) => {
+  const db = getDB();
+  const user = db.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const { username, profilePicture, avatar } = req.body;
+  if (username !== undefined && user.role !== 'student') {
+    user.username = username || null;
+  }
+  if (profilePicture !== undefined && user.role !== 'student') {
+    if (profilePicture && profilePicture.length > 500000) {
+      return res.status(400).json({ error: 'Image too large (max 500KB)' });
+    }
+    user.profilePicture = profilePicture;
+  }
+  if (avatar !== undefined && user.role === 'student') {
+    user.avatar = avatar;
+  }
+  saveDB(db);
+  res.json({ success: true, user: { id: user.id, email: user.email, username: user.username, role: user.role, profilePicture: user.profilePicture || null, avatar: user.avatar || null } });
 });
 
 // ── Health ──

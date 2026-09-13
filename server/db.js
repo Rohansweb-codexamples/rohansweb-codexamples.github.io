@@ -42,11 +42,17 @@ function initializeDB() {
     changed = true;
   }
 
-  // Migrate users: add products and class fields
+  // Migrate users: add products, class, profilePicture and avatar fields
   db.users.forEach(u => {
     if (u.products === undefined) { u.products = []; changed = true; }
     if (u.class === undefined) { u.class = null; changed = true; }
+    if (u.profilePicture === undefined) { u.profilePicture = null; changed = true; }
+    if (u.avatar === undefined) { u.avatar = null; changed = true; }
   });
+
+  // Migrate: add documents array
+  if (!db.documents) { db.documents = []; changed = true; }
+  if (!db.nextDocId) { db.nextDocId = 1; changed = true; }
 
   // Seed super admin
   if (!db.users.find(u => u.email === 'rohanwest@rohansweb.co.uk')) {
