@@ -19,6 +19,7 @@ window.API = {
     });
     const data = await res.json();
     if (res.status === 401) {
+      sessionStorage.setItem('rw_redirect', window.location.pathname);
       this.removeToken();
       this.clearUser();
       window.location.href = 'login.html';
@@ -50,10 +51,17 @@ window.API = {
 
   requireAuth() {
     if (!this.isLoggedIn()) {
+      sessionStorage.setItem('rw_redirect', window.location.pathname);
       window.location.href = 'login.html';
       return false;
     }
     return true;
+  },
+
+  getRedirect() {
+    const url = sessionStorage.getItem('rw_redirect');
+    sessionStorage.removeItem('rw_redirect');
+    return url || 'dashboard.html';
   },
 
   requireRole(...roles) {

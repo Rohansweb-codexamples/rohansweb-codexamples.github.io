@@ -45,7 +45,7 @@
 </div>
 
 <script>
-if (API.isLoggedIn()) window.location.href = 'dashboard.html';
+if (API.isLoggedIn()) window.location.href = API.getRedirect();
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -55,7 +55,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
   try {
     await API.login(login, password);
-    window.location.href = 'dashboard.html';
+    window.location.href = API.getRedirect();
   } catch (err) {
     errorEl.textContent = err.message;
     errorEl.classList.add('show');

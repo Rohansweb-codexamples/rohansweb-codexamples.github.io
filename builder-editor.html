@@ -130,7 +130,7 @@ function copyExport() { const ta = document.getElementById('exportCode'); ta.sel
 function saveBlocks() { localStorage.setItem('rw_builder', JSON.stringify(blocks)); showStatus('Saved!'); }
 function loadBlocks() { const s = localStorage.getItem('rw_builder'); if (s) { try { blocks = JSON.parse(s); } catch {} } renderBlocks(); }
 function showStatus(msg) { const el = document.getElementById('saveStatus'); el.textContent = msg; setTimeout(() => el.textContent = '', 2000); }
-function esc(s) { return String(s||'').replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"'); }
+function esc(s) { var e={'&':'&'+'amp;','<':'&'+'lt;','>':'&'+'gt;','"':'&'+'quot;'}; return String(s||'').replace(/[&<>"]/g, function(c){ return e[c]; }); }
 </script>
 </body>
 </html>

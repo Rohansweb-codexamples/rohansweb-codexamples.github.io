@@ -162,6 +162,43 @@ app.get('/api/admin/users', authenticate, requireRole('admin', 'super_admin'), (
   })));
 });
 
+// ── Admin Stats ──
+
+app.get('/api/admin/stats', authenticate, requireRole('admin', 'super_admin'), (req, res) => {
+  const db = getDB();
+  let users;
+  if (req.user.role === 'super_admin') {
+    users = db.users.filter(u => u.id !== req.user.id);
+  } else {
+    users = db.users.filter(u => u.createdBy === req.user.id);
+  }
+  const stats = {
+    students: users.filter(u => u.role === 'student').length,
+    admins: users.filter(u => u.role === 'admin').length,
+    users: users.filter(u => u.role === 'user').length,
+    total: users.length,
+    productCounts: {}
+  };
+  db.products.forEach(p => {
+    stats.productCounts[p.slug] = users.filter(u => (u.products || []).includes(p.slug)).length;
+  });
+  res.json(stats);
+});
+
+// ── Super Admin: Update Any User ──
+
+app.put('/api/superadmin/user/:id', authenticate, requireRole('super_admin'), (req, res) => {
+  const db = getDB();
+  const target = db.users.find(u => u.id === parseInt(req.params.id));
+  if (!target) return res.status(404).json({ error: 'User not found' });
+  if (target.role === 'super_admin') return res.status(403).json({ error: 'Cannot modify super admin' });
+  const { password, role } = req.body;
+  if (password) target.password = bcrypt.hashSync(password, 10);
+  if (role && ['admin', 'user'].includes(role)) target.role = role;
+  saveDB(db);
+  res.json({ success: true, user: { id: target.id, email: target.email, username: target.username, role: target.role } });
+});
+
 // ── Products (per-user access) ──
 
 app.get('/api/products', authenticate, (req, res) => {
