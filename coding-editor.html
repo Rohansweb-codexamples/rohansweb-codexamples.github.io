@@ -21,12 +21,21 @@
 .preview-wrap iframe { width:100%; height:100%; border:none; }
 .split { display:flex; flex-direction:column; flex:1; overflow:hidden; }
 @media(min-width:768px) { .split { flex-direction:row; } .code-area { margin:0 0 0 12px; } .preview-wrap { margin:0 12px 0 0; } }
+.loading-screen { text-align:center; padding:80px 20px; }
+.loading-screen .spinner { font-size:3rem; animation:spin 1s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-screen p { color:#7a5c1a; margin-top:12px; font-size:.9rem; }
 </style>
 </head>
 <body>
 <div class="app-bar">
   <h1><a href="coding.html">← Coding</a> · Editor</h1>
   <div class="user-info" id="userInfo"></div>
+</div>
+
+<div id="loadingScreen" class="loading-screen">
+  <div class="spinner">⏳</div>
+  <p>Loading editor...</p>
 </div>
 
 <div id="notAvailable" class="not-available" style="display:none;">
@@ -61,14 +70,30 @@
 </div>
 
 <script>
-if (!API.requireAuth()) throw new Error('redirect');
-const user = API.getUser();
-document.getElementById('userInfo').innerHTML = `<span class="role-badge">${user.role.replace('_',' ')}</span><button class="logout-btn" onclick="API.logout()">Logout</button>`;
+(async function() {
+  if (!API.isLoggedIn()) {
+    sessionStorage.setItem('rw_redirect', window.location.pathname);
+    window.location.href = 'login.html';
+    return;
+  }
+  const user = API.getUser();
+  document.getElementById('userInfo').innerHTML = '<span class="role-badge">' + user.role.replace('_',' ') + '<\/span><button class="logout-btn" onclick="API.logout()">Logout<\/button>';
 
-API.checkProduct('coding').then(enabled => {
-  if (enabled) { document.getElementById('content').style.display = 'flex'; loadSaved(); runCode(); }
-  else { document.getElementById('notAvailable').style.display = 'block'; }
-});
+  try {
+    const enabled = await API.checkProduct('coding');
+    document.getElementById('loadingScreen').style.display = 'none';
+    if (enabled) {
+      document.getElementById('content').style.display = 'flex';
+      loadSaved();
+      runCode();
+    } else {
+      document.getElementById('notAvailable').style.display = 'block';
+    }
+  } catch (err) {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('notAvailable').style.display = 'block';
+  }
+})();
 
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -90,7 +115,7 @@ function runCode() {
   const html = document.getElementById('code-html').value;
   const css = document.getElementById('code-css').value;
   const js = document.getElementById('code-js').value;
-  document.getElementById('preview').srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+  document.getElementById('preview').srcdoc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + css + '<\/style><\/head><body>' + html + '<' + 'script>' + js + '<\/script><\/body><\/html>';
 }
 
 function clearCode() {
@@ -115,9 +140,9 @@ function loadSaved() {
       document.getElementById('code-html').value = d.html || '';
       document.getElementById('code-css').value = d.css || '';
       document.getElementById('code-js').value = d.js || '';
-    } catch {}
+    } catch (e) {}
   } else {
-    document.getElementById('code-html').value = '<h1>Hello World!</h1>\n<p>Start coding here...</p>';
+    document.getElementById('code-html').value = '<h1>Hello World!<\/h1>\n<p>Start coding here...<\/p>';
     document.getElementById('code-css').value = 'body { font-family: Arial; padding: 20px; }\nh1 { color: #ff8c00; }';
   }
 }

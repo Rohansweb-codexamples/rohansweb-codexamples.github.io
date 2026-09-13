@@ -74,11 +74,17 @@ window.API = {
   },
 
   async checkProduct(slug) {
+    var user = this.getUser();
+    if (user) {
+      if (user.role === 'admin' || user.role === 'super_admin') return true;
+      if (user.role === 'student') return (user.products || []).includes(slug);
+      if (user.role === 'user') return true;
+    }
     try {
-      const products = await this.call('/api/products');
-      const product = products.find(p => p.slug === slug);
+      var products = await this.call('/api/products');
+      var product = products.find(function(p) { return p.slug === slug; });
       return !!(product && product.hasAccess);
-    } catch {
+    } catch (e) {
       return false;
     }
   }

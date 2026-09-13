@@ -31,12 +31,21 @@
 .export-modal textarea { width:100%; height:300px; font-family:'Courier New',monospace; font-size:12px; padding:12px; border:2px solid rgba(255,140,0,.2); border-radius:10px; }
 .export-modal .modal-actions { display:flex; gap:8px; margin-top:12px; }
 .empty-builder { text-align:center; padding:40px; color:#7a5c1a; }
+.loading-screen { text-align:center; padding:80px 20px; }
+.loading-screen .spinner { font-size:3rem; animation:spin 1s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-screen p { color:#7a5c1a; margin-top:12px; font-size:.9rem; }
 </style>
 </head>
 <body>
 <div class="app-bar">
   <h1><a href="builder.html">← Builder</a> · Editor</h1>
   <div class="user-info" id="userInfo"></div>
+</div>
+
+<div id="loadingScreen" class="loading-screen">
+  <div class="spinner">⏳</div>
+  <p>Loading builder...</p>
 </div>
 
 <div id="notAvailable" class="not-available" style="display:none;">
@@ -76,14 +85,29 @@
 </div>
 
 <script>
-if (!API.requireAuth()) throw new Error('redirect');
-const user = API.getUser();
-document.getElementById('userInfo').innerHTML = `<span class="role-badge">${user.role.replace('_',' ')}</span><button class="logout-btn" onclick="API.logout()">Logout</button>`;
+(async function() {
+  if (!API.isLoggedIn()) {
+    sessionStorage.setItem('rw_redirect', window.location.pathname);
+    window.location.href = 'login.html';
+    return;
+  }
+  const user = API.getUser();
+  document.getElementById('userInfo').innerHTML = '<span class="role-badge">' + user.role.replace('_',' ') + '<\/span><button class="logout-btn" onclick="API.logout()">Logout<\/button>';
 
-API.checkProduct('builder').then(enabled => {
-  if (enabled) { document.getElementById('content').style.display = 'flex'; loadBlocks(); }
-  else { document.getElementById('notAvailable').style.display = 'block'; }
-});
+  try {
+    const enabled = await API.checkProduct('builder');
+    document.getElementById('loadingScreen').style.display = 'none';
+    if (enabled) {
+      document.getElementById('content').style.display = 'flex';
+      loadBlocks();
+    } else {
+      document.getElementById('notAvailable').style.display = 'block';
+    }
+  } catch (err) {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('notAvailable').style.display = 'block';
+  }
+})();
 
 let blocks = [];
 function addBlock(type) {
@@ -100,37 +124,37 @@ function updateBlock(id, field, value) { const b = blocks.find(b => b.id === id)
 
 function renderBlocks() {
   const list = document.getElementById('blockList');
-  if (!blocks.length) { list.innerHTML = '<div class="empty-builder">Click "Add" buttons above to start building your page.</div>'; updatePreview(); return; }
-  list.innerHTML = blocks.map((b) => {
-    let content = '';
-    if (b.type === 'heading') content = `<input type="text" value="${esc(b.content)}" oninput="updateBlock(${b.id},'content',this.value)" placeholder="Heading text">`;
-    else if (b.type === 'text') content = `<textarea oninput="updateBlock(${b.id},'content',this.value)" placeholder="Text content">${esc(b.content)}</textarea>`;
-    else if (b.type === 'image') content = `<input type="text" value="${esc(b.content)}" oninput="updateBlock(${b.id},'content',this.value)" placeholder="Image URL">`;
-    else if (b.type === 'button') content = `<input type="text" value="${esc(b.content)}" oninput="updateBlock(${b.id},'content',this.value)" placeholder="Button text"><input type="text" value="${esc(b.link||'')}" oninput="updateBlock(${b.id},'link',this.value)" placeholder="Link URL">`;
-    return `<div class="block-item"><div class="block-content"><span class="block-type">${b.type}</span>${content}</div><div class="block-controls"><button onclick="moveBlock(${b.id},-1)">↑</button><button onclick="moveBlock(${b.id},1)">↓</button><button onclick="removeBlock(${b.id})" style="color:#e74c3c;">✕</button></div></div>`;
+  if (!blocks.length) { list.innerHTML = '<div class="empty-builder">Click "Add" buttons above to start building your page.<\/div>'; updatePreview(); return; }
+  list.innerHTML = blocks.map(function(b) {
+    var c = '';
+    if (b.type === 'heading') c = '<input type="text" value="' + esc(b.content) + '" oninput="updateBlock(' + b.id + ',\'content\',this.value)" placeholder="Heading text">';
+    else if (b.type === 'text') c = '<textarea oninput="updateBlock(' + b.id + ',\'content\',this.value)" placeholder="Text content">' + esc(b.content) + '<\/textarea>';
+    else if (b.type === 'image') c = '<input type="text" value="' + esc(b.content) + '" oninput="updateBlock(' + b.id + ',\'content\',this.value)" placeholder="Image URL">';
+    else if (b.type === 'button') c = '<input type="text" value="' + esc(b.content) + '" oninput="updateBlock(' + b.id + ',\'content\',this.value)" placeholder="Button text"><input type="text" value="' + esc(b.link||'') + '" oninput="updateBlock(' + b.id + ',\'link\',this.value)" placeholder="Link URL">';
+    return '<div class="block-item"><div class="block-content"><span class="block-type">' + b.type + '<\/span>' + c + '<\/div><div class="block-controls"><button onclick="moveBlock(' + b.id + ',-1)">↑<\/button><button onclick="moveBlock(' + b.id + ',1)">↓<\/button><button onclick="removeBlock(' + b.id + ')" style="color:#e74c3c;">✕<\/button><\/div><\/div>';
   }).join('');
   updatePreview();
 }
 
 function generateHTML() {
-  let body = '';
-  blocks.forEach(b => {
-    if (b.type === 'heading') body += `<h1>${esc(b.content)}</h1>\n`;
-    else if (b.type === 'text') body += `<p>${esc(b.content)}</p>\n`;
-    else if (b.type === 'image') body += `<img src="${esc(b.content)}" alt="" style="max-width:100%;">\n`;
-    else if (b.type === 'button') body += `<a href="${esc(b.link||'#')}" style="display:inline-block;padding:12px 24px;background:#ff8c00;color:#fff;text-decoration:none;border-radius:8px;">${esc(b.content)}</a>\n`;
-    else if (b.type === 'divider') body += `<hr>\n`;
+  var body = '';
+  blocks.forEach(function(b) {
+    if (b.type === 'heading') body += '<h1>' + esc(b.content) + '<\/h1>\n';
+    else if (b.type === 'text') body += '<p>' + esc(b.content) + '<\/p>\n';
+    else if (b.type === 'image') body += '<img src="' + esc(b.content) + '" alt="" style="max-width:100%;">\n';
+    else if (b.type === 'button') body += '<a href="' + esc(b.link||'#') + '" style="display:inline-block;padding:12px 24px;background:#ff8c00;color:#fff;text-decoration:none;border-radius:8px;">' + esc(b.content) + '<\/a>\n';
+    else if (b.type === 'divider') body += '<hr>\n';
   });
-  return `<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;}img{max-width:100%;}</style>\n</head>\n<body>\n${body}</body>\n</html>`;
+  return '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;}img{max-width:100%;}<\/style>\n<\/head>\n<body>\n' + body + '<\/body>\n<\/html>';
 }
 
 function updatePreview() { document.getElementById('preview').srcdoc = generateHTML(); }
 function exportHTML() { document.getElementById('exportCode').value = generateHTML(); document.getElementById('exportModal').classList.add('show'); }
-function copyExport() { const ta = document.getElementById('exportCode'); ta.select(); document.execCommand('copy'); showStatus('Copied!'); }
+function copyExport() { var ta = document.getElementById('exportCode'); ta.select(); document.execCommand('copy'); showStatus('Copied!'); }
 function saveBlocks() { localStorage.setItem('rw_builder', JSON.stringify(blocks)); showStatus('Saved!'); }
-function loadBlocks() { const s = localStorage.getItem('rw_builder'); if (s) { try { blocks = JSON.parse(s); } catch {} } renderBlocks(); }
-function showStatus(msg) { const el = document.getElementById('saveStatus'); el.textContent = msg; setTimeout(() => el.textContent = '', 2000); }
-function esc(s) { var e={'&':'&'+'amp;','<':'&'+'lt;','>':'&'+'gt;','"':'&'+'quot;'}; return String(s||'').replace(/[&<>"]/g, function(c){ return e[c]; }); }
+function loadBlocks() { var s = localStorage.getItem('rw_builder'); if (s) { try { blocks = JSON.parse(s); } catch(e) {} } renderBlocks(); }
+function showStatus(msg) { var el = document.getElementById('saveStatus'); el.textContent = msg; setTimeout(function(){ el.textContent = ''; }, 2000); }
+function esc(s) { var e = { '&': '&'+'amp;', '<': '&'+'lt;', '>': '&'+'gt;', '"': '&'+'quot;' }; return String(s||'').replace(/[&<>"]/g, function(c) { return e[c]; }); }
 </script>
 </body>
 </html>

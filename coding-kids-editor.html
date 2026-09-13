@@ -35,12 +35,21 @@
 .color-dot { width:28px; height:28px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:.2s; }
 .color-dot.selected { border-color:#4a3206; transform:scale(1.15); }
 .turtle-info { margin-top:8px; font-size:.8rem; color:#7a5c1a; }
+.loading-screen { text-align:center; padding:80px 20px; }
+.loading-screen .spinner { font-size:3rem; animation:spin 1s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-screen p { color:#7a5c1a; margin-top:12px; font-size:.9rem; }
 </style>
 </head>
 <body>
 <div class="app-bar">
   <h1><a href="coding-kids.html">← Kids</a> · 🐢 Editor</h1>
   <div class="user-info" id="userInfo"></div>
+</div>
+
+<div id="loadingScreen" class="loading-screen">
+  <div class="spinner">⏳</div>
+  <p>Loading...</p>
 </div>
 
 <div id="notAvailable" class="not-available" style="display:none;">
@@ -86,47 +95,62 @@
 </div>
 
 <script>
-if (!API.requireAuth()) throw new Error('redirect');
-const user = API.getUser();
-document.getElementById('userInfo').innerHTML = `<span class="role-badge">${user.role.replace('_',' ')}</span><button class="logout-btn" onclick="API.logout()">Logout</button>`;
+(async function() {
+  if (!API.isLoggedIn()) {
+    sessionStorage.setItem('rw_redirect', window.location.pathname);
+    window.location.href = 'login.html';
+    return;
+  }
+  var user = API.getUser();
+  document.getElementById('userInfo').innerHTML = '<span class="role-badge">' + user.role.replace('_',' ') + '<\/span><button class="logout-btn" onclick="API.logout()">Logout<\/button>';
 
-API.checkProduct('coding-kids').then(enabled => {
-  if (enabled) { document.getElementById('content').style.display = 'flex'; initTurtle(); }
-  else { document.getElementById('notAvailable').style.display = 'block'; }
-});
+  try {
+    var enabled = await API.checkProduct('coding-kids');
+    document.getElementById('loadingScreen').style.display = 'none';
+    if (enabled) {
+      document.getElementById('content').style.display = 'flex';
+      initTurtle();
+    } else {
+      document.getElementById('notAvailable').style.display = 'block';
+    }
+  } catch (err) {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('notAvailable').style.display = 'block';
+  }
+})();
 
-const colors = ['#ff8c00','#e74c3c','#3498db','#2ecc71','#9b59b6','#f1c40f','#1abc9c','#e67e22'];
-let selectedColor = '#ff8c00';
+var colors = ['#ff8c00','#e74c3c','#3498db','#2ecc71','#9b59b6','#f1c40f','#1abc9c','#e67e22'];
+var selectedColor = '#ff8c00';
 function initColorPalette() {
-  document.getElementById('colorPalette').innerHTML = colors.map(c =>
-    `<div class="color-dot ${c===selectedColor?'selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`
-  ).join('');
+  document.getElementById('colorPalette').innerHTML = colors.map(function(c) {
+    return '<div class="color-dot ' + (c===selectedColor?'selected':'') + '" style="background:' + c + '" onclick="selectColor(\'' + c + '\')"><\/div>';
+  }).join('');
 }
 function selectColor(c) { selectedColor = c; initColorPalette(); addCmd('color', c); }
 
-let program = [];
+var program = [];
 function addCmd(type, value) {
   if (type === 'forward') value = parseInt(document.getElementById('fwd-amount').value) || 50;
   else if (type === 'back') value = parseInt(document.getElementById('back-amount').value) || 50;
   else if (type === 'left') value = parseInt(document.getElementById('left-amount').value) || 90;
   else if (type === 'right') value = parseInt(document.getElementById('right-amount').value) || 90;
-  program.push({ type, value }); renderProgram();
+  program.push({ type: type, value: value }); renderProgram();
 }
 function removeCmd(i) { program.splice(i, 1); renderProgram(); }
 function clearProgram() { program = []; renderProgram(); resetTurtle(); }
 function renderProgram() {
-  const list = document.getElementById('programList');
-  if (!program.length) { list.innerHTML = '<li style="color:#7a5c1a;justify-content:center;">No commands yet. Add some above!</li>'; return; }
-  list.innerHTML = program.map((cmd, i) => {
-    let text = cmd.type; if (cmd.value !== null) text += ` (${cmd.value})`;
-    return `<li><span class="cmd-text">${i+1}. ${text}</span><button onclick="removeCmd(${i})">✕</button></li>`;
+  var list = document.getElementById('programList');
+  if (!program.length) { list.innerHTML = '<li style="color:#7a5c1a;justify-content:center;">No commands yet. Add some above!<\/li>'; return; }
+  list.innerHTML = program.map(function(cmd, i) {
+    var text = cmd.type; if (cmd.value !== null && cmd.value !== undefined) text += ' (' + cmd.value + ')';
+    return '<li><span class="cmd-text">' + (i+1) + '. ' + text + '<\/span><button onclick="removeCmd(' + i + ')">✕<\/button><\/li>';
   }).join('');
 }
 
-let turtle = {}, ctx;
+var turtle = {}, ctx;
 function initTurtle() { initColorPalette(); resetTurtle(); }
 function resetTurtle() {
-  const canvas = document.getElementById('turtleCanvas');
+  var canvas = document.getElementById('turtleCanvas');
   ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   turtle = { x: canvas.width/2, y: canvas.height/2, angle: -90, penDown: true, color: '#ff8c00' };
@@ -138,22 +162,22 @@ function drawTurtle() {
   ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('🐢', 0, 0); ctx.restore();
 }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 
 async function runProgram() {
   resetTurtle();
   document.getElementById('turtleInfo').textContent = '🐢 Running...';
   ctx.fillStyle = '#fffdf5'; ctx.fillRect(0, 0, 400, 400);
-  for (let i = 0; i < program.length; i++) {
-    const cmd = program[i];
-    document.getElementById('turtleInfo').textContent = `🐢 Step ${i+1}/${program.length}: ${cmd.type}`;
+  for (var i = 0; i < program.length; i++) {
+    var cmd = program[i];
+    document.getElementById('turtleInfo').textContent = '🐢 Step ' + (i+1) + '/' + program.length + ': ' + cmd.type;
     if (cmd.type === 'color') turtle.color = cmd.value;
     else if (cmd.type === 'penup') turtle.penDown = false;
     else if (cmd.type === 'pendown') turtle.penDown = true;
     else if (cmd.type === 'forward' || cmd.type === 'back') {
-      const dist = cmd.type === 'forward' ? cmd.value : -cmd.value;
-      const rad = turtle.angle * Math.PI / 180;
-      const nx = turtle.x + Math.cos(rad) * dist, ny = turtle.y + Math.sin(rad) * dist;
+      var dist = cmd.type === 'forward' ? cmd.value : -cmd.value;
+      var rad = turtle.angle * Math.PI / 180;
+      var nx = turtle.x + Math.cos(rad) * dist, ny = turtle.y + Math.sin(rad) * dist;
       if (turtle.penDown) { ctx.strokeStyle = turtle.color; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(turtle.x, turtle.y); ctx.lineTo(nx, ny); ctx.stroke(); }
       turtle.x = nx; turtle.y = ny;
     } else if (cmd.type === 'left') turtle.angle -= cmd.value;

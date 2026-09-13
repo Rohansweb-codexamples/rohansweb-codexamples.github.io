@@ -67,7 +67,7 @@ app.post('/api/auth/signup', (req, res) => {
   db.users.push(user);
   saveDB(db);
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, user: { id: user.id, email: user.email, username: user.username, role: user.role } });
+  res.json({ token, user: { id: user.id, email: user.email, username: user.username, role: user.role, class: user.class, products: user.products || [] } });
 });
 
 app.get('/api/me', authenticate, (req, res) => {
